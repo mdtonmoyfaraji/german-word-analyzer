@@ -17,6 +17,7 @@ textarea {
     min-height: 200px;
     padding: 10px;
     background: #121212;
+    color: #ffffff;
     border-radius: 5px;
     white-space: pre-wrap;   /* 🔥 preserves spaces + line breaks */
     font-family: inherit;    /* same font as textarea */
