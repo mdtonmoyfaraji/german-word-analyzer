@@ -12,7 +12,7 @@ window.detectGender = function () {
 
         if (gender) {
             let cls = mapGender(gender);
-            result += `<span class="${cls}">${word}</span>`;
+            result += `<span class="${cls} word-hover" data-word="${word}">${word}</span>`;
         } else {
             result += word;
         }
@@ -89,4 +89,57 @@ function mapGender(g) {
         N: "neuter",
         NG: "only-plural"
     }[g] || "";
+}
+
+const hoverBox = document.createElement("div");
+hoverBox.id = "hoverBox";
+document.body.appendChild(hoverBox);
+
+// 🔥 HOVER EVENT
+document.addEventListener("mouseover", function(e) {
+    if (!e.target.classList.contains("word-hover")) return;
+
+    let word = e.target.dataset.word;
+
+    fetchData(word, (html) => {
+        if (!html) return;
+
+        hoverBox.innerHTML = html;
+        hoverBox.style.display = "block";
+
+        let rect = e.target.getBoundingClientRect();
+        hoverBox.style.left = rect.left + "px";
+        hoverBox.style.top = (rect.bottom + 5) + "px";
+    });
+});
+
+document.addEventListener("mouseout", function(e) {
+    if (e.target.classList.contains("word-hover")) {
+        hoverBox.style.display = "none";
+    }
+});
+
+function fetchData(word, callback) {
+    fetch(`https://freedictionaryapi.com/api/v1/entries/de/${encodeURIComponent(word)}?translations=true`)
+        .then(res => res.json())
+        .then(data => {
+
+            let entry = data.entries?.[0];
+            if (!entry) return callback("");
+
+            let meaning = entry.senses?.[0]?.definition || "";
+
+            let syn = (entry.synonyms || []).join(", ");
+            let ant = (entry.antonyms || []).join(", ");
+
+            let html = `
+                <b>${word}</b><br>
+                ${meaning}<br><hr>
+                ${syn ? `<b>Syn:</b> ${syn}<br>` : ""}
+                ${ant ? `<b>Ant:</b> ${ant}` : ""}
+            `;
+
+            callback(html);
+        })
+        .catch(() => callback(""));
 }
