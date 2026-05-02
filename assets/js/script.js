@@ -1,7 +1,8 @@
 window.detectGender = function () {
-    const text = document.getElementById("inputText").value;
+    const textarea = document.getElementById("inputText");
     const outputDiv = document.getElementById("output");
 
+    const text = textarea.value;
     const words = text.split(/(\s+|[.,\/#!$%\^&\*;:{}=\-_`~()])/g);
 
     let result = "";
@@ -19,11 +20,55 @@ window.detectGender = function () {
 
     outputDiv.innerHTML = result;
 
-    // 🔥 SAVE DATA
+    // 🔥 SWITCH VIEW
+    textarea.style.display = "none";
+    outputDiv.style.display = "block";
+
+    // SAVE
     localStorage.setItem("savedInput", text);
     localStorage.setItem("savedOutput", result);
 };
 
+function editText() {
+    const textarea = document.getElementById("inputText");
+    const outputDiv = document.getElementById("output");
+
+    textarea.style.display = "block";
+    outputDiv.style.display = "none";
+}
+
+function clearText() {
+    const textarea = document.getElementById("inputText");
+    const outputDiv = document.getElementById("output");
+
+    textarea.value = "";
+    outputDiv.innerHTML = "";
+
+    textarea.style.display = "block";
+    outputDiv.style.display = "none";
+
+    localStorage.removeItem("savedInput");
+    localStorage.removeItem("savedOutput");
+}
+
+// LOAD SAVED STATE
+window.addEventListener("load", () => {
+    const savedInput = localStorage.getItem("savedInput");
+    const savedOutput = localStorage.getItem("savedOutput");
+
+    const textarea = document.getElementById("inputText");
+    const outputDiv = document.getElementById("output");
+
+    if (savedInput && savedOutput) {
+        textarea.value = savedInput;
+        outputDiv.innerHTML = savedOutput;
+
+        textarea.style.display = "none";
+        outputDiv.style.display = "block";
+    }
+});
+
+// EXISTING FUNCTIONS
 function getGender(word) {
     if (nounGenderDictionary[word]) return nounGenderDictionary[word];
 
@@ -44,27 +89,4 @@ function mapGender(g) {
         N: "neuter",
         NG: "only-plural"
     }[g] || "";
-}
-
-window.addEventListener("load", () => {
-    const savedInput = localStorage.getItem("savedInput");
-    const savedOutput = localStorage.getItem("savedOutput");
-
-    if (savedInput) {
-        document.getElementById("inputText").value = savedInput;
-    }
-
-    if (savedOutput) {
-        document.getElementById("output").innerHTML = savedOutput;
-    }
-});
-
-
-function clearText() {
-    document.getElementById("inputText").value = "";
-    document.getElementById("output").innerHTML = "";
-
-    // 🔥 REMOVE SAVED DATA
-    localStorage.removeItem("savedInput");
-    localStorage.removeItem("savedOutput");
 }
