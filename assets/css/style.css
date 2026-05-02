@@ -18,6 +18,8 @@ textarea {
     padding: 10px;
     background: #121212;
     border-radius: 5px;
+    white-space: pre-wrap;   /* 🔥 preserves spaces + line breaks */
+    font-family: inherit;    /* same font as textarea */
 }
 
 .buttons {
