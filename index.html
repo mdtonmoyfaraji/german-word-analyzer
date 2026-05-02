@@ -2,34 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>German Gender Detector</title>
-
-    <!-- CSS PATH -->
+    <title>Gender Detector</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<h1>German Noun Gender Detector</h1>
+<h1>German Gender Detector</h1>
 
-<div class="container">
+<div class="box">
 
-    <!-- INPUT -->
-    <div class="box">
-        <h2>Input</h2>
-        <textarea id="inputText" placeholder="Paste your German text here..."></textarea>
-        <button onclick="detectGender()">Detect Gender</button>
-        <button onclick="clearText()">Clear</button>
-    </div>
+    <!-- TEXTAREA -->
+    <textarea id="inputText" placeholder="Paste text..."></textarea>
 
     <!-- OUTPUT -->
-    <div class="box">
-        <h2>Output</h2>
-        <div id="output"></div>
+    <div id="output" style="display:none;"></div>
+
+    <!-- BUTTONS -->
+    <div class="buttons">
+        <button onclick="detectGender()">Detect Gender</button>
+        <button onclick="editText()">Edit</button>
+        <button onclick="clearText()">Clear</button>
     </div>
 
 </div>
 
-<!-- JS PATHS (IMPORTANT ORDER) -->
 <script src="assets/js/dictionary.js"></script>
 <script src="assets/js/script.js"></script>
 
