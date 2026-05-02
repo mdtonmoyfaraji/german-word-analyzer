@@ -35,7 +35,7 @@ hr { opacity: 0.1; }
    ========================= */
 function clean(word){
     return (word || "")
-        .replace(/[.,!?()"]/g,'')
+        .replace(/[.,!?()\"]/g,'')
         .trim()
         .split(/[\/\s\n]+/)[0];
 }
@@ -344,7 +344,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 }
 
 /* =========================
-   🪄 HOVER TRIGGER (NEW)
+   🪄 HOVER TRIGGER (OUTPUT ONLY)
    ========================= */
 
 const HOVER_DELAY_MS = 350;
@@ -392,15 +392,24 @@ function isValidWord(w) {
   return /^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(w);
 }
 
+function isInsideOutput(target) {
+  const output = document.getElementById("output");
+  return !!(output && output.style.display !== "none" && output.contains(target));
+}
+
 document.addEventListener("mousemove", (e) => {
+  // Only trigger when hovering text inside #output (the highlighted view)
+  if (!isInsideOutput(e.target)) {
+    if (hoverTimer) clearTimeout(hoverTimer);
+    hoverTimer = null;
+    return;
+  }
+
   lastMouse.x = e.clientX;
   lastMouse.y = e.clientY;
 
   const box = document.getElementById("dictBox");
   if (box && box.contains(e.target)) return;
-
-  const t = e.target;
-  if (t && t.closest && t.closest("input, textarea, [contenteditable='true']")) return;
 
   const w = getWordFromPoint(e.clientX, e.clientY);
   if (!isValidWord(w)) {
