@@ -36,3 +36,23 @@ button {
 .feminine { color: #d75656; }
 .neuter { color: #649b62; }
 .only-plural { color: orange; }
+
+
+.word-hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#hoverBox {
+    position: fixed;
+    width: 260px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 9999;
+    display: none;
+}
