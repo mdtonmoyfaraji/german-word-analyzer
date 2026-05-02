@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>German Gender Detector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>German Noun Gender Detector</h1>
+
+<div class="container">
+
+    <!-- LEFT: INPUT -->
+    <div class="box">
+        <h2>Input</h2>
+        <textarea id="inputText" placeholder="Paste your German text here..."></textarea>
+        <button onclick="detectGender()">Detect Gender</button>
+    </div>
+
+    <!-- RIGHT: OUTPUT -->
+    <div class="box">
+        <h2>Output</h2>
+        <div id="output"></div>
+    </div>
+
+</div>
+
+<script src="dictionary.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
