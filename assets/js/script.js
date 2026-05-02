@@ -1,5 +1,4 @@
 window.detectGender = function () {
-    const text = document.getElementById("inputText").value;
     const textarea = document.getElementById("inputText");
     const outputDiv = document.getElementById("output");
 
@@ -21,7 +20,6 @@ window.detectGender = function () {
 
     outputDiv.innerHTML = result;
 
-    // 🔥 SAVE DATA
     // 🔥 SWITCH VIEW
     textarea.style.display = "none";
     outputDiv.style.display = "block";
@@ -91,27 +89,4 @@ function mapGender(g) {
         N: "neuter",
         NG: "only-plural"
     }[g] || "";
-}
-
-window.addEventListener("load", () => {
-    const savedInput = localStorage.getItem("savedInput");
-    const savedOutput = localStorage.getItem("savedOutput");
-
-    if (savedInput) {
-        document.getElementById("inputText").value = savedInput;
-    }
-
-    if (savedOutput) {
-        document.getElementById("output").innerHTML = savedOutput;
-    }
-});
-
-
-function clearText() {
-    document.getElementById("inputText").value = "";
-    document.getElementById("output").innerHTML = "";
-
-    // 🔥 REMOVE SAVED DATA
-    localStorage.removeItem("savedInput");
-    localStorage.removeItem("savedOutput");
 }
