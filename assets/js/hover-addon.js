@@ -35,9 +35,9 @@ hr { opacity: 0.1; }
    ========================= */
 function clean(word){
     return (word || "")
-        .replace(/[.,!?()"]/g,'')
+        .replace(/[.,!?()"]/g,'')   // remove punctuation
         .trim()
-        .split(/[\/\s\n]+/)[0];
+        .split(/[\/\s\n]+/)[0];     // keep only first word
 }
 
 /* =========================
@@ -50,10 +50,10 @@ const lowercase = w => w.toLowerCase();
    🌐 CALL DICTIONARY API
    ========================= */
 async function api(word, callback){
-  try {
+  try{
     const url = `https://freedictionaryapi.com/api/v1/entries/de/${encodeURIComponent(word)}?translations=true`;
     const res = await fetch(url, { method: "GET" });
-    if (!res.ok) return callback(null);
+    if(!res.ok) return callback(null);
     const json = await res.json();
     callback(json);
   } catch {
@@ -107,6 +107,7 @@ function renderNoun(entries){
 
     for(let e of entries){
 
+        // detect noun and gender
         if(e.partOfSpeech === "noun"){
             isNoun = true;
             meaning = e.senses?.[0]?.definition || meaning;
@@ -117,6 +118,7 @@ function renderNoun(entries){
             else if(tags.includes("neuter")) article="das";
         }
 
+        // loop through forms
         for(let f of (e.forms || [])){
             let t = f.tags || [];
 
@@ -138,6 +140,7 @@ function renderNoun(entries){
 
     let baseWithArticle = article ? article + " " + base : base;
 
+    // ❌ skip empty
     if(!base && !genitive && !plural && !meaning) return "";
 
     return `
@@ -180,6 +183,7 @@ function renderVerb(entries){
         }
     }
 
+    // normalize auxiliary verbs
     function normalizeAux(str){
         if(!str) return str;
         return str
@@ -189,6 +193,7 @@ function renderVerb(entries){
 
     part = normalizeAux(part);
 
+    // add auxiliary if missing
     if(part && !part.includes(" ")){
         let aux = ["machen","haben","sehen","lernen","spielen"].some(v=>inf.includes(v)) ? "hat":"ist";
         part = aux + " " + part;
@@ -208,17 +213,17 @@ ${meaning ? `<span>${meaning}</span>` : ""}
 /* =========================
    🖥️ SHOW POPUP BOX
    ========================= */
-let lastMouse = { x: 20, y: 20 };
-
 function show(html){
 
     let box = document.getElementById("dictBox");
 
+    // create box if not exists
     if(!box){
         box = document.createElement("div");
         box.id="dictBox";
         document.body.appendChild(box);
 
+        // prevent closing when clicking inside
         ["mousedown","click","contextmenu"].forEach(evt =>
             box.addEventListener(evt, e => e.stopPropagation())
         );
@@ -226,26 +231,21 @@ function show(html){
 
     box.innerHTML = html;
 
-    // If there is a selection range, use it; else position by mouse (for hover mode)
+    // position near selected text
     let sel = window.getSelection();
-    let range = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
+    let range = sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
 
-    let left, top;
+    if(range){
+        let left = range.x;
+        let top = range.y + 20;
 
-    if(range && (range.width || range.height)){
-        left = range.x;
-        top = range.y + 20;
-    } else {
-        left = lastMouse.x + 12;
-        top = lastMouse.y + 12;
+        if(left+340 > window.innerWidth) left = window.innerWidth - 350;
+        if(top+300 > window.innerHeight) top = range.y - 310;
+        if(top < 10) top = 10;
+
+        box.style.left = left+"px";
+        box.style.top = top+"px";
     }
-
-    if(left+340 > window.innerWidth) left = window.innerWidth - 350;
-    if(top+300 > window.innerHeight) top = top - 320;
-    if(top < 10) top = 10;
-
-    box.style.left = left+"px";
-    box.style.top = top+"px";
 }
 
 /* =========================
@@ -309,15 +309,17 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 </div>`;
         }
 
+        // ❌ If everything empty → remove popup completely
         if(!finalHTML.trim()){
             let box = document.getElementById("dictBox");
             if(box) box.remove();
             return;
         }
 
-        show(finalHTML);
+        show(finalHTML); // ✅ ONLY ONCE
     }
 
+    // noun (capital)
     resolve(capitalize(word), entries=>{
         nounHTML = renderNoun(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
@@ -330,6 +332,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         tryRender();
     });
 
+    // verb (lowercase)
     resolve(lowercase(word), entries=>{
         verbHTML = renderVerb(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
@@ -344,78 +347,16 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 }
 
 /* =========================
-   🪄 HOVER TRIGGER (NEW)
+   🖱️ TEXT SELECTION TRIGGER
    ========================= */
+document.addEventListener("mouseup", ()=>{
+    let text = clean(window.getSelection().toString());
 
-const HOVER_DELAY_MS = 350;
-let hoverTimer = null;
-let lastWord = "";
+    if(!text) return;
+    if(/\s/.test(text)) return;
+    if(!/^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(text)) return;
 
-function getWordFromPoint(x, y) {
-  let range = null;
-
-  if (document.caretPositionFromPoint) {
-    const pos = document.caretPositionFromPoint(x, y);
-    if (!pos || !pos.offsetNode) return "";
-    range = document.createRange();
-    range.setStart(pos.offsetNode, pos.offset);
-    range.setEnd(pos.offsetNode, pos.offset);
-  } else if (document.caretRangeFromPoint) {
-    range = document.caretRangeFromPoint(x, y);
-    if (!range) return "";
-  } else {
-    return "";
-  }
-
-  const node = range.startContainer;
-  if (!node || node.nodeType !== Node.TEXT_NODE) return "";
-
-  const text = node.textContent || "";
-  let i = range.startOffset;
-  if (i > 0 && i === text.length) i--;
-
-  const isWordChar = ch => /[A-Za-zÄÖÜäöüß-]/.test(ch);
-
-  let start = i;
-  while (start > 0 && isWordChar(text[start - 1])) start--;
-
-  let end = i;
-  while (end < text.length && isWordChar(text[end])) end++;
-
-  return clean(text.slice(start, end));
-}
-
-function isValidWord(w) {
-  if (!w) return false;
-  if (w.length < 2) return false;
-  if (/\s/.test(w)) return false;
-  return /^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(w);
-}
-
-document.addEventListener("mousemove", (e) => {
-  lastMouse.x = e.clientX;
-  lastMouse.y = e.clientY;
-
-  const box = document.getElementById("dictBox");
-  if (box && box.contains(e.target)) return;
-
-  const t = e.target;
-  if (t && t.closest && t.closest("input, textarea, [contenteditable='true']")) return;
-
-  const w = getWordFromPoint(e.clientX, e.clientY);
-  if (!isValidWord(w)) {
-    if (hoverTimer) clearTimeout(hoverTimer);
-    hoverTimer = null;
-    return;
-  }
-
-  if (w === lastWord) return;
-
-  if (hoverTimer) clearTimeout(hoverTimer);
-  hoverTimer = setTimeout(() => {
-    lastWord = w;
-    resolveDual(w);
-  }, HOVER_DELAY_MS);
+    resolveDual(text);
 });
 
 /* =========================
