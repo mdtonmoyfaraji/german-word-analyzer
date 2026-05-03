@@ -63,6 +63,7 @@ textarea {
     padding: 10px;
     font-size: 16px;
     box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
 }
 
 #output {
