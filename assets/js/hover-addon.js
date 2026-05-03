@@ -62,12 +62,13 @@ async function api(word, callback){
 }
 
 /* =========================
-   🔍 FIND BASE WORD (e.g. past → infinitive)
+   🔍 FIND BASE WORD (e.g. plural → singular)
    ========================= */
 function findBase(data){
     for (let e of (data?.entries || [])){
         for (let s of (e.senses || [])){
-            let match = s.definition?.match(/(?:of|past of|participle of|plural of) ([A-Za-zÄÖÜäöüß]+)/i);
+            // e.g. "plural of Garten", "past of gehen", "participle of ..."
+            let match = s.definition?.match(/(?:plural of|past of|participle of|form of|of)\s+([A-Za-zÄÖÜäöüß]+)/i);
             if(match) return match[1];
         }
     }
@@ -136,12 +137,10 @@ function renderNoun(entries){
         }
     }
 
-    // Some entries (esp. when you hover the base singular word itself)
-    // don't list a nominative singular form in `forms`. In that case,
-    // fall back to the headword so the NOUN block still renders.
+    // Fallback for base word when API doesn't include nominative singular in forms
     if(!base){
         const nounEntry = entries?.find(e => e.partOfSpeech === "noun" && e.word);
-        if(nounEntry) base = nounEntry.word;
+        if(nounEntry?.word) base = nounEntry.word;
     }
 
     let baseWithArticle = article ? article + " " + base : base;
@@ -326,7 +325,14 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         show(finalHTML);
     }
 
-    resolve(capitalize(word), entries=>{
+    // For nouns, trying only Capitalized(word) can fail for some words (e.g. Mann vs mann)
+    // depending on source casing. So we try BOTH casings and render whichever returns.
+    // This keeps existing behavior for verbs (still resolved via lowercase call).
+    let nounResolved = false;
+    const resolveNounOnce = (entries) => {
+        if(nounResolved) return;
+        nounResolved = true;
+
         nounHTML = renderNoun(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
 
@@ -336,6 +342,11 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         nounDone = true;
         tryRender();
+    };
+
+    resolve(capitalize(word), entries => {
+        if(entries && entries.length) return resolveNounOnce(entries);
+        resolve(word, resolveNounOnce);
     });
 
     resolve(lowercase(word), entries=>{
@@ -485,13 +496,23 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         targetEl.innerHTML = finalHTML.trim() || "<em>No result found.</em>";
     }
 
-    resolve(capitalize(word), entries=>{
+    // Same noun robustness for sidebar search
+    let nounResolved = false;
+    const resolveNounOnce = (entries) => {
+        if(nounResolved) return;
+        nounResolved = true;
+
         nounHTML = renderNoun(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
         let {syn,ant} = collectSynAnt(entries);
         syn.forEach(x=>synSet.add(x));
         ant.forEach(x=>antSet.add(x));
         nounDone=true; tryRender();
+    };
+
+    resolve(capitalize(word), entries => {
+        if(entries && entries.length) return resolveNounOnce(entries);
+        resolve(word, resolveNounOnce);
     });
 
     resolve(lowercase(word), entries=>{
