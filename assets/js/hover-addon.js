@@ -99,11 +99,48 @@ function collectSynAnt(entries){
 }
 
 /* =========================
+   🧠 DETECT NOUN ARTICLE (der/die/das)
+   ========================= */
+function detectArticle(entries){
+    if(!entries || !entries.length) return "";
+
+    // Look for gender tags across common places
+    for(const e of entries){
+        const tagSets = [];
+
+        // Some APIs put tags at entry level
+        if(Array.isArray(e.tags)) tagSets.push(e.tags);
+
+        // Your current logic: sense tags
+        if(Array.isArray(e.senses)){
+            for(const s of e.senses){
+                if(Array.isArray(s?.tags)) tagSets.push(s.tags);
+            }
+        }
+
+        // Some APIs put gender on forms
+        if(Array.isArray(e.forms)){
+            for(const f of e.forms){
+                if(Array.isArray(f?.tags)) tagSets.push(f.tags);
+            }
+        }
+
+        for(const tags of tagSets){
+            if(tags.includes("masculine")) return "der";
+            if(tags.includes("feminine")) return "die";
+            if(tags.includes("neuter")) return "das";
+        }
+    }
+
+    return "";
+}
+
+/* =========================
    📘 RENDER NOUN DATA
    ========================= */
 function renderNoun(entries){
 
-    let base="", plural="", genitive="", meaning="", article="";
+    let base="", plural="", genitive="", meaning="";
     let isNoun=false;
 
     for(let e of entries){
@@ -111,11 +148,6 @@ function renderNoun(entries){
         if(e.partOfSpeech === "noun"){
             isNoun = true;
             meaning = e.senses?.[0]?.definition || meaning;
-
-            let tags = e.senses?.[0]?.tags || [];
-            if(tags.includes("masculine")) article="der";
-            else if(tags.includes("feminine")) article="die";
-            else if(tags.includes("neuter")) article="das";
         }
 
         for(let f of (e.forms || [])){
@@ -143,7 +175,8 @@ function renderNoun(entries){
         if(nounEntry?.word) base = nounEntry.word;
     }
 
-    let baseWithArticle = article ? article + " " + base : base;
+    const article = detectArticle(entries);
+    const baseWithArticle = article ? article + " " + base : base;
 
     if(!base && !genitive && !plural && !meaning) return "";
 
@@ -325,9 +358,8 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         show(finalHTML);
     }
 
-    // For nouns, trying only Capitalized(word) can fail for some words (e.g. Mann vs mann)
-    // depending on source casing. So we try BOTH casings and render whichever returns.
-    // This keeps existing behavior for verbs (still resolved via lowercase call).
+    // For nouns, trying only Capitalized(word) can fail for some words depending on casing.
+    // Try both: Capitalized(word) then original word.
     let nounResolved = false;
     const resolveNounOnce = (entries) => {
         if(nounResolved) return;
