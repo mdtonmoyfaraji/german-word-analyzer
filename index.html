@@ -2,33 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gender Detector</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<h1>German Gender Detector</h1>
+<div class="page-container">
 
-<div class="box">
+    <h1>German Gender Detector</h1>
 
-    <!-- TEXTAREA -->
-    <textarea id="inputText" placeholder="Paste text..."></textarea>
+    <div class="layout">
 
-    <!-- OUTPUT -->
-    <div id="output" style="display:none;"></div>
+        <!-- LEFT COLUMN (80%) -->
+        <main class="col-main">
+            <div class="box">
 
-    <!-- BUTTONS -->
-    <div class="buttons">
-        <button onclick="detectGender()">Detect Gender</button>
-        <button onclick="editText()">Edit</button>
-        <button onclick="clearText()">Clear</button>
-    </div>
+                <!-- TEXTAREA -->
+                <textarea id="inputText" placeholder="Paste text..."></textarea>
 
-</div>
-    
+                <!-- OUTPUT -->
+                <div id="output" style="display:none;"></div>
+
+                <!-- BUTTONS -->
+                <div class="buttons">
+                    <button onclick="detectGender()">Detect Gender</button>
+                    <button onclick="editText()">Edit</button>
+                    <button onclick="clearText()">Clear</button>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- RIGHT COLUMN (20%) — Dictionary Sidebar -->
+        <aside class="col-sidebar" aria-label="Dictionary search">
+
+            <div class="sidebar-search">
+                <label for="sidebarInput" class="sidebar-label">Dictionary Search</label>
+                <div class="sidebar-input-row">
+                    <input
+                        id="sidebarInput"
+                        type="text"
+                        placeholder="Type a word…"
+                        aria-label="Search word"
+                        onkeydown="if(event.key==='Enter') sidebarSearch()"
+                    />
+                    <button onclick="sidebarSearch()">Search</button>
+                </div>
+            </div>
+
+            <div id="sidebarResult" class="sidebar-result" aria-live="polite"></div>
+
+        </aside>
+
+    </div><!-- /.layout -->
+
+</div><!-- /.page-container -->
+
 <script src="assets/js/hover-addon.js"></script>
 <script src="assets/js/dictionary.js"></script>
 <script src="assets/js/script.js"></script>
+
+<script>
+function sidebarSearch() {
+    var word = document.getElementById("sidebarInput").value.trim();
+    var resultEl = document.getElementById("sidebarResult");
+    if (!word) {
+        resultEl.innerHTML = "<em>Please enter a word.</em>";
+        return;
+    }
+    if (typeof window.dictSearch === "function") {
+        window.dictSearch(word, resultEl);
+    } else {
+        resultEl.innerHTML = "<em>Dictionary not available.</em>";
+    }
+}
+</script>
 
 </body>
 </html>

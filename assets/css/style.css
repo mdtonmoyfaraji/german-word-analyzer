@@ -1,9 +1,60 @@
+/* =============================================
+   PAGE CONTAINER — centered, max-width
+   ============================================= */
+:root {
+    --layout-gap: 16px;
+}
+
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* =============================================
+   TWO-COLUMN LAYOUT
+   ============================================= */
+.layout {
+    display: flex;
+    gap: var(--layout-gap);
+    align-items: flex-start;
+}
+
+.col-main {
+    flex: 0 0 80%;
+    width: 80%;
+    min-width: 0;
+}
+
+.col-sidebar {
+    flex: 0 0 calc(20% - var(--layout-gap));
+    width: calc(20% - var(--layout-gap));
+    min-width: 0;
+}
+
+/* =============================================
+   RESPONSIVE — stack on small screens
+   ============================================= */
+@media (max-width: 700px) {
+    .layout {
+        flex-direction: column;
+    }
+    .col-main,
+    .col-sidebar {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+}
+
+/* =============================================
+   EXISTING BOX STYLES
+   ============================================= */
 .box {
-    width: 60%;
-    margin: auto;
+    width: 100%;
     background: #1e1e1e;
     padding: 20px;
     border-radius: 10px;
+    box-sizing: border-box;
 }
 
 textarea {
@@ -11,6 +62,7 @@ textarea {
     height: 200px;
     padding: 10px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 #output {
@@ -57,3 +109,66 @@ button {
     z-index: 9999;
     display: none;
 }
+
+/* =============================================
+   SIDEBAR
+   ============================================= */
+.col-sidebar {
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 16px;
+    box-sizing: border-box;
+    color: #fff;
+}
+
+.sidebar-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.sidebar-input-row {
+    display: flex;
+    gap: 6px;
+}
+
+.sidebar-input-row input {
+    flex: 1;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #121212;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+.sidebar-input-row button {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.sidebar-result {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #eee;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.sidebar-result .noun,
+.sidebar-result .verb,
+.sidebar-result .synant {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+}
+

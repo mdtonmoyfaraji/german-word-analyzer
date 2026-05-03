@@ -435,4 +435,65 @@ document.addEventListener("mousedown", e=>{
     if(box && !box.contains(e.target)) box.remove();
 });
 
+/* =========================
+   🔎 SIDEBAR DICTIONARY SEARCH
+   Exposed globally so sidebar UI can call it.
+   Renders result into `targetEl` instead of the floating popup.
+   ========================= */
+window.dictSearch = function(word, targetEl){
+    if(!word || !targetEl) return;
+    word = clean(word);
+    if(!word) return;
+
+    targetEl.innerHTML = "Loading…";
+
+    let nounHTML="", verbHTML="", fallbackMeaning="";
+    let synSet=new Set(), antSet=new Set();
+    let nounDone=false, verbDone=false;
+
+    function tryRender(){
+        if(!nounDone || !verbDone) return;
+
+        let synStr=[...synSet].join(", ");
+        let antStr=[...antSet].join(", ");
+
+        let finalHTML="";
+
+        if(!nounHTML && !verbHTML && fallbackMeaning){
+            finalHTML += `<div><b>MEANING</b><br>${fallbackMeaning}</div>`;
+        }
+        if(nounHTML) finalHTML+=nounHTML;
+        if(verbHTML) finalHTML+=verbHTML;
+
+        if(synStr || antStr){
+            finalHTML += `
+<div class="synant">
+<b>SYN / ANT</b><br>
+${synStr ? `<span><b>Syn:</b> ${synStr}</span>` : ""}
+${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
+</div>`;
+        }
+
+        targetEl.innerHTML = finalHTML.trim() || "<em>No result found.</em>";
+    }
+
+    resolve(capitalize(word), entries=>{
+        nounHTML = renderNoun(entries);
+        fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
+        let {syn,ant} = collectSynAnt(entries);
+        syn.forEach(x=>synSet.add(x));
+        ant.forEach(x=>antSet.add(x));
+        nounDone=true; tryRender();
+    });
+
+    resolve(lowercase(word), entries=>{
+        verbHTML = renderVerb(entries);
+        fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
+        let {syn,ant} = collectSynAnt(entries);
+        syn.forEach(x=>synSet.add(x));
+        ant.forEach(x=>antSet.add(x));
+        verbDone=true; tryRender();
+    });
+};
+
 })();
