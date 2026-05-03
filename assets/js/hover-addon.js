@@ -718,6 +718,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         const w = nounVariants[nounAttempt++];
         resolve(w, (entries) => {
+            fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
             resolveNounMaybe(entries);
             nextNoun();
         });
@@ -758,6 +759,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         const w = verbVariants[verbAttempt++];
         resolve(w, (entries) => {
+            fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
             resolveVerbMaybe(entries);
             nextVerb();
         });
