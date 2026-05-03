@@ -71,13 +71,13 @@ textarea,
     box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
     border-radius: 5px;
+    min-height: 400px;
 }
 textarea {
-    height: 400px;
+    
 }
 
 #output {
-    min-height: 200px;
     background: #121212;
     color: #ffffff;
     white-space: pre-wrap;
