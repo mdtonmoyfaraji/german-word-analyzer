@@ -47,6 +47,18 @@ const capitalize = w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
 const lowercase = w => w.toLowerCase();
 
 /* =========================
+   📌 INJECT WORD INTO ENTRIES
+   The API returns the word at the root level ({word:"Frau", entries:[...]})
+   but NOT inside each entry object. This helper stamps the word onto entries
+   that lack it so downstream functions (renderNoun, detectArticle) can use e.word.
+   ========================= */
+function injectWord(rawEntries, word){
+    return rawEntries.map(e =>
+        e.word ? e : Object.assign({}, e, {word: word})
+    );
+}
+
+/* =========================
    🌐 CALL DICTIONARY API
    ========================= */
 async function api(word, callback){
@@ -65,10 +77,15 @@ async function api(word, callback){
    🔍 FIND BASE WORD (e.g. plural → singular)
    ========================= */
 function findBase(data){
-    for (let e of (data?.entries || [])){
+    // Support both array-at-root and {entries:[...]} response formats
+    const entries = Array.isArray(data) ? data : (data?.entries || []);
+    for (let e of entries){
         for (let s of (e.senses || [])){
-            // e.g. "plural of Garten", "past of gehen", "participle of ..."
-            let match = s.definition?.match(/(?:plural of|past of|participle of|form of|of)\s+([A-Za-zÄÖÜäöüß]+)/i);
+            // Only match SPECIFIC patterns anchored at the start of the definition.
+            // The bare "of" pattern was removed because it caused false positives:
+            // e.g. "movement of a symphony" (Satz) → redirected to "a" → empty result.
+            // Cases: "plural of Garten", "past of gehen", "participle of ..."
+            let match = s.definition?.match(/^(?:plural of|past of|participle of|form of)\s+([A-Za-zÄÖÜäöüß]+)/i);
             if(match) return match[1];
         }
     }
@@ -129,6 +146,22 @@ function detectArticle(entries){
             if(tags.includes("masculine")) return "der";
             if(tags.includes("feminine")) return "die";
             if(tags.includes("neuter")) return "das";
+        }
+    }
+
+    // Fallback: look up the noun word in the local gender dictionary.
+    // dictionary.js (loaded on the same page) defines nounGenderDictionary as a
+    // plain global.  Using typeof avoids a ReferenceError in environments where
+    // that script is absent, which is the correct guard for browser globals.
+    // This covers common nouns like "Frau" (F→die), "Satz" (M→der), "Garten" (M→der).
+    if(typeof nounGenderDictionary !== "undefined"){
+        for(const e of entries){
+            if(e.partOfSpeech !== "noun" || !e.word) continue;
+            const g = nounGenderDictionary[e.word] ||
+                      nounGenderDictionary[capitalize(e.word)];
+            if(g === "M") return "der";
+            if(g === "F") return "die";
+            if(g === "N") return "das";
         }
     }
 
@@ -306,7 +339,22 @@ function resolve(word, cb){
     api(word,(data)=>{
         if(!data) return cb([]);
 
-        let entries = data.entries || [];
+        // Handle both response formats:
+        //   {word:"Frau", entries:[{partOfSpeech:"noun",...}]}  ← standard
+        //   [{word:"Frau", partOfSpeech:"noun",...}]            ← array at root
+        let rawEntries, topWord;
+        if(Array.isArray(data)){
+            rawEntries = data;
+            topWord = data[0]?.word || word;
+        } else {
+            rawEntries = data.entries || [];
+            topWord = data.word || word;
+        }
+
+        // Inject top-level word into entries that lack .word field.
+        // See injectWord() helper above for details.
+        let entries = injectWord(rawEntries, topWord);
+
         let base = findBase(data);
 
         let isInf = entries.some(e =>
@@ -314,7 +362,17 @@ function resolve(word, cb){
         );
 
         if(base && !isInf){
-            api(base, data2 => cb(data2?.entries || entries));
+            api(base, data2 => {
+                if(!data2) return cb(entries); // API error → keep original entries
+                let raw2 = Array.isArray(data2) ? data2 : (data2.entries || []);
+                // BUG FIX: an empty array [] is truthy, so `raw2 || entries` would
+                // wrongly return [].  Explicitly check length before using raw2.
+                if(!raw2.length) return cb(entries);
+                let topWord2 = Array.isArray(data2)
+                    ? (data2[0]?.word || base)
+                    : (data2.word || base);
+                cb(injectWord(raw2, topWord2));
+            });
         } else {
             cb(entries);
         }
