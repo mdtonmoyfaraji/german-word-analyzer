@@ -182,33 +182,31 @@ function hasNoun(entries){
 function renderNoun(entries){
 
     let base="", plural="", genitive="", meaning="";
-    let isNoun=false;
 
     for(let e of entries){
 
         if(e.partOfSpeech === "noun"){
-            isNoun = true;
             meaning = e.senses?.[0]?.definition || meaning;
 
-            // Important: for some singular nouns the API might not include
-            // a nominative singular form in e.forms. Ensure we still have a base.
+            // Base noun lemma as returned by API (important for cases where no nominative singular form is in e.forms)
             if(!base && e.word) base = e.word;
-        }
 
-        for(let f of (e.forms || [])){
-            let t = f.tags || [];
+            for(let f of (e.forms || [])){
+                let t = f.tags || [];
 
-            if(t.includes("nominative") && t.includes("singular")){
-                base = f.word;
-            }
+                if(t.includes("nominative") && t.includes("singular")){
+                    base = f.word;
+                }
 
-            if(isNoun && t.includes("genitive") && !genitive){
-                genitive = f.word;
-            }
+                if(t.includes("genitive") && !genitive){
+                    genitive = f.word;
+                }
 
-            if(isNoun && t.includes("plural") && !plural){
-                if(!f.word.includes("gegangen") && !f.word.includes("werden")){
-                    plural = f.word;
+                if(t.includes("plural") && !plural){
+                    // Old workaround kept (filters some verb participle noise if it ever appears in noun forms)
+                    if(!f.word.includes("gegangen") && !f.word.includes("werden")){
+                        plural = f.word;
+                    }
                 }
             }
         }
@@ -241,7 +239,11 @@ function renderVerb(entries){
 
     let inf="", pres="", past="", part="", meaning="";
 
-    for(let e of entries){
+    // Only accept verb entries, otherwise noun-only pages like "Texte" can hide verbs.
+    const verbEntries = (Array.isArray(entries) ? entries : []).filter(e => e && e.partOfSpeech === "verb");
+    if(!verbEntries.length) return "";
+
+    for(let e of verbEntries){
 
         meaning = e.senses?.[0]?.definition || meaning;
         if(!inf) inf = e.word;
@@ -477,9 +479,22 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         });
     })();
 
-    // Verb stays same: lowercase call
-    resolve(lowercase(word), entries=>{
-        verbHTML = renderVerb(entries);
+    // VERB: do not force lowercase here. "Ist" (capitalized) can have a verb entry
+    // that the lowercase lookup misses depending on API/Wiktionary page structure.
+    const verbVariants = Array.from(new Set([
+        word,
+        lowercase(word),
+        capitalize(word)
+    ]));
+
+    let verbResolved = false;
+    const resolveVerbMaybe = (entries) => {
+        if(verbResolved) return;
+        const html = renderVerb(entries);
+        if(!html) return; // keep trying other variants
+
+        verbResolved = true;
+        verbHTML = html;
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
 
         let {syn,ant} = collectSynAnt(entries);
@@ -488,7 +503,25 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         verbDone = true;
         tryRender();
-    });
+    };
+
+    const finalizeVerb = () => {
+        if(verbDone) return;
+        verbDone = true;
+        tryRender();
+    };
+
+    let verbAttempt = 0;
+    (function nextVerb(){
+        if(verbResolved) return;
+        if(verbAttempt >= verbVariants.length) return finalizeVerb();
+
+        const w = verbVariants[verbAttempt++];
+        resolve(w, (entries) => {
+            resolveVerbMaybe(entries);
+            nextVerb();
+        });
+    })();
 }
 
 /* =========================
@@ -663,15 +696,45 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         });
     })();
 
-    // Verb stays same
-    resolve(lowercase(word), entries=>{
-        verbHTML = renderVerb(entries);
+    // Verb: try multiple casing variants
+    const verbVariants = Array.from(new Set([
+        word,
+        lowercase(word),
+        capitalize(word)
+    ]));
+
+    let verbResolved = false;
+    const resolveVerbMaybe = (entries) => {
+        if(verbResolved) return;
+        const html = renderVerb(entries);
+        if(!html) return;
+
+        verbResolved = true;
+        verbHTML = html;
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
+
         let {syn,ant} = collectSynAnt(entries);
         syn.forEach(x=>synSet.add(x));
         ant.forEach(x=>antSet.add(x));
         verbDone=true; tryRender();
-    });
+    };
+
+    const finalizeVerb = () => {
+        if(verbDone) return;
+        verbDone=true; tryRender();
+    };
+
+    let verbAttempt = 0;
+    (function nextVerb(){
+        if(verbResolved) return;
+        if(verbAttempt >= verbVariants.length) return finalizeVerb();
+
+        const w = verbVariants[verbAttempt++];
+        resolve(w, (entries) => {
+            resolveVerbMaybe(entries);
+            nextVerb();
+        });
+    })();
 };
 
 })();
