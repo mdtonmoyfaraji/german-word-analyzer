@@ -494,6 +494,9 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         const w = nounVariants[nounAttempt++];
         resolve(w, (entries) => {
+            // Capture fallback meaning from any valid response (covers adjectives,
+            // adverbs, prepositions, and other non-noun/non-verb parts of speech).
+            fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
             resolveNounMaybe(entries);
             // continue until resolved or variants exhausted
             nextNoun();
@@ -539,6 +542,9 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
         const w = verbVariants[verbAttempt++];
         resolve(w, (entries) => {
+            // Capture fallback meaning from any valid response (covers adjectives,
+            // adverbs, prepositions, and other non-noun/non-verb parts of speech).
+            fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
             resolveVerbMaybe(entries);
             nextVerb();
         });
