@@ -63,24 +63,24 @@
     box-sizing: border-box;
 }
 
-textarea {
+textarea,
+#output {
     width: 100%;
-    height: 400px;
     padding: 10px;
     font-size: 18px;
     box-sizing: border-box;
     font-family: "Montserrat", sans-serif;
     border-radius: 5px;
 }
+textarea {
+    height: 400px;
+}
 
 #output {
     min-height: 200px;
-    padding: 10px;
     background: #121212;
     color: #ffffff;
-    border-radius: 5px;
-    white-space: pre-wrap;   /* 🔥 preserves spaces + line breaks */
-    font-family: "Montserrat", sans-serif;
+    white-space: pre-wrap;
 }
 
 .buttons {
