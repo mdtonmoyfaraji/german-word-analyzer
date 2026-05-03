@@ -73,7 +73,7 @@ textarea {
     color: #ffffff;
     border-radius: 5px;
     white-space: pre-wrap;   /* 🔥 preserves spaces + line breaks */
-    font-family: inherit;    /* same font as textarea */
+    font-family: "Montserrat", sans-serif;
 }
 
 .buttons {
