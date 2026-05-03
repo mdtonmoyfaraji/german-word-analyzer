@@ -67,7 +67,7 @@ async function api(word, callback){
 function findBase(data){
     for (let e of (data?.entries || [])){
         for (let s of (e.senses || [])){
-            let match = s.definition?.match(/(?:of|past of|participle of) ([A-Za-zÄÖÜäöüß]+)/i);
+            let match = s.definition?.match(/(?:of|past of|participle of|plural of) ([A-Za-zÄÖÜäöüß]+)/i);
             if(match) return match[1];
         }
     }
@@ -134,6 +134,14 @@ function renderNoun(entries){
                 }
             }
         }
+    }
+
+    // Some entries (esp. when you hover the base singular word itself)
+    // don't list a nominative singular form in `forms`. In that case,
+    // fall back to the headword so the NOUN block still renders.
+    if(!base){
+        const nounEntry = entries?.find(e => e.partOfSpeech === "noun" && e.word);
+        if(nounEntry) base = nounEntry.word;
     }
 
     let baseWithArticle = article ? article + " " + base : base;
