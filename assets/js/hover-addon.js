@@ -85,7 +85,7 @@ function findBase(data){
             // The bare "of" pattern was removed because it caused false positives:
             // e.g. "movement of a symphony" (Satz) → redirected to "a" → empty result.
             // Cases: "plural of Garten", "past of gehen", "participle of ..."
-            let match = s.definition?.match(/^(?:plural of|past of|participle of|form of)\s+([A-Za-zÄÖÜäöüß]+)/i);
+            let match = s.definition?.match(/^(?:plural of|past of|participle of|form of)\s+([A-Za-zÄÖÜäöüß-]+)/i);
             if(match) return match[1];
         }
     }
@@ -151,10 +151,11 @@ function detectArticle(entries){
 
     // Fallback: look up the noun word in the local gender dictionary.
     // dictionary.js (loaded on the same page) defines nounGenderDictionary as a
-    // plain global.  Using typeof avoids a ReferenceError in environments where
-    // that script is absent, which is the correct guard for browser globals.
+    // plain global.  Using typeof + truthy check avoids a ReferenceError in
+    // environments where that script is absent, and also handles cases where
+    // the variable is explicitly set to null/undefined.
     // This covers common nouns like "Frau" (F→die), "Satz" (M→der), "Garten" (M→der).
-    if(typeof nounGenderDictionary !== "undefined"){
+    if(typeof nounGenderDictionary !== "undefined" && nounGenderDictionary){
         for(const e of entries){
             if(e.partOfSpeech !== "noun" || !e.word) continue;
             const g = nounGenderDictionary[e.word] ||
@@ -366,7 +367,7 @@ function resolve(word, cb){
                 if(!data2) return cb(entries); // API error → keep original entries
                 let raw2 = Array.isArray(data2) ? data2 : (data2.entries || []);
                 // BUG FIX: an empty array [] is truthy, so `raw2 || entries` would
-                // wrongly return [].  Explicitly check length before using raw2.
+                // incorrectly return [].  Explicitly check length before using raw2.
                 if(!raw2.length) return cb(entries);
                 let topWord2 = Array.isArray(data2)
                     ? (data2[0]?.word || base)
