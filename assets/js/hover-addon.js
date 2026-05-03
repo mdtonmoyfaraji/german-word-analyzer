@@ -76,17 +76,38 @@ async function api(word, callback){
 /* =========================
    🔍 FIND BASE WORD (e.g. plural → singular)
    ========================= */
+// Pre-compiled regex for Pattern 1 (anchored "form of" keywords at definition start).
+const RE_FINDBASE_P1 = /^(?:plural of|past of|participle of|form of)\s+([A-Za-zÄÖÜäöüß-]+)/i;
+// Pre-compiled regex for Pattern 2 (any "of <word>" occurrence used with "form of" tag).
+const RE_FINDBASE_P2 = /\bof\s+([A-Za-zÄÖÜäöüß-]+)/gi;
+
 function findBase(data){
     // Support both array-at-root and {entries:[...]} response formats
     const entries = Array.isArray(data) ? data : (data?.entries || []);
     for (let e of entries){
         for (let s of (e.senses || [])){
-            // Only match SPECIFIC patterns anchored at the start of the definition.
-            // The bare "of" pattern was removed because it caused false positives:
-            // e.g. "movement of a symphony" (Satz) → redirected to "a" → empty result.
-            // Cases: "plural of Garten", "past of gehen", "participle of ..."
-            let match = s.definition?.match(/^(?:plural of|past of|participle of|form of)\s+([A-Za-zÄÖÜäöüß-]+)/i);
+            const def = s.definition || "";
+            const tags = s.tags || [];
+
+            // Pattern 1: definition starts with a known form keyword (existing behavior).
+            // Cases: "plural of Garten", "past of gehen", "form of ..."
+            const match = def.match(RE_FINDBASE_P1);
             if(match) return match[1];
+
+            // Pattern 2: sense is tagged as "form of" by the API → extract the base word
+            // from the last "of <word>" occurrence in the definition.
+            // Handles: "nominative/accusative/genitive plural of Text"
+            //          "third-person singular present of sein"
+            //          "inflection of texten:" (and similar Wiktionary patterns)
+            // Safe because we only activate this when the API explicitly marks the
+            // sense as "form of", so bare definitions like "movement of a symphony"
+            // are never affected.
+            if(tags.includes("form of")){
+                const allMatches = [...def.matchAll(RE_FINDBASE_P2)];
+                if(allMatches.length){
+                    return allMatches[allMatches.length - 1][1];
+                }
+            }
         }
     }
     return null;
