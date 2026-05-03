@@ -111,14 +111,14 @@ function detectArticle(entries){
         // Some APIs put tags at entry level
         if(Array.isArray(e.tags)) tagSets.push(e.tags);
 
-        // Your current logic: sense tags
+        // Sense tags
         if(Array.isArray(e.senses)){
             for(const s of e.senses){
                 if(Array.isArray(s?.tags)) tagSets.push(s.tags);
             }
         }
 
-        // Some APIs put gender on forms
+        // Forms tags
         if(Array.isArray(e.forms)){
             for(const f of e.forms){
                 if(Array.isArray(f?.tags)) tagSets.push(f.tags);
@@ -136,6 +136,13 @@ function detectArticle(entries){
 }
 
 /* =========================
+   ✅ HELPERS FOR "HAS REAL NOUN DATA"
+   ========================= */
+function hasNoun(entries){
+    return Array.isArray(entries) && entries.some(e => e && e.partOfSpeech === "noun");
+}
+
+/* =========================
    📘 RENDER NOUN DATA
    ========================= */
 function renderNoun(entries){
@@ -149,7 +156,7 @@ function renderNoun(entries){
             isNoun = true;
             meaning = e.senses?.[0]?.definition || meaning;
 
-            // Important: for singular nouns (e.g. "Garten") the API may not include
+            // Important: for some singular nouns the API might not include
             // a nominative singular form in e.forms. Ensure we still have a base.
             if(!base && e.word) base = e.word;
         }
@@ -362,13 +369,16 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         show(finalHTML);
     }
 
-    // For nouns, trying only Capitalized(word) can fail for some words depending on casing.
-    // Try both: Capitalized(word) then original word.
+    // Noun resolution must not "lock in" on non-noun results.
+    // Example: searching "Garten" should not accept a verb/empty result and then stop.
     let nounResolved = false;
-    const resolveNounOnce = (entries) => {
+    const resolveNounMaybe = (entries) => {
         if(nounResolved) return;
-        nounResolved = true;
 
+        // Only accept responses that actually contain a noun entry.
+        if(!hasNoun(entries)) return;
+
+        nounResolved = true;
         nounHTML = renderNoun(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
 
@@ -380,11 +390,35 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         tryRender();
     };
 
-    resolve(capitalize(word), entries => {
-        if(entries && entries.length) return resolveNounOnce(entries);
-        resolve(word, resolveNounOnce);
-    });
+    // Finalize noun even if we didn't find a noun anywhere (prevents endless loading)
+    const finalizeNoun = () => {
+        if(nounDone) return;
+        nounDone = true;
+        tryRender();
+    };
 
+    // Try several casing variants for nouns. Some words can be stored differently.
+    // We finalize after the last attempt.
+    const nounVariants = Array.from(new Set([
+        capitalize(word),
+        word,
+        lowercase(word)
+    ]));
+
+    let nounAttempt = 0;
+    (function nextNoun(){
+        if(nounResolved) return; // resolved via hasNoun
+        if(nounAttempt >= nounVariants.length) return finalizeNoun();
+
+        const w = nounVariants[nounAttempt++];
+        resolve(w, (entries) => {
+            resolveNounMaybe(entries);
+            // continue until resolved or variants exhausted
+            nextNoun();
+        });
+    })();
+
+    // Verb stays same: lowercase call
     resolve(lowercase(word), entries=>{
         verbHTML = renderVerb(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
@@ -532,12 +566,13 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         targetEl.innerHTML = finalHTML.trim() || "<em>No result found.</em>";
     }
 
-    // Same noun robustness for sidebar search
+    // Noun: same improved resolution as hover popup
     let nounResolved = false;
-    const resolveNounOnce = (entries) => {
+    const resolveNounMaybe = (entries) => {
         if(nounResolved) return;
-        nounResolved = true;
+        if(!hasNoun(entries)) return;
 
+        nounResolved = true;
         nounHTML = renderNoun(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
         let {syn,ant} = collectSynAnt(entries);
@@ -546,11 +581,30 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
         nounDone=true; tryRender();
     };
 
-    resolve(capitalize(word), entries => {
-        if(entries && entries.length) return resolveNounOnce(entries);
-        resolve(word, resolveNounOnce);
-    });
+    const finalizeNoun = () => {
+        if(nounDone) return;
+        nounDone=true; tryRender();
+    };
 
+    const nounVariants = Array.from(new Set([
+        capitalize(word),
+        word,
+        lowercase(word)
+    ]));
+
+    let nounAttempt = 0;
+    (function nextNoun(){
+        if(nounResolved) return;
+        if(nounAttempt >= nounVariants.length) return finalizeNoun();
+
+        const w = nounVariants[nounAttempt++];
+        resolve(w, (entries) => {
+            resolveNounMaybe(entries);
+            nextNoun();
+        });
+    })();
+
+    // Verb stays same
     resolve(lowercase(word), entries=>{
         verbHTML = renderVerb(entries);
         fallbackMeaning ||= entries?.[0]?.senses?.[0]?.definition;
