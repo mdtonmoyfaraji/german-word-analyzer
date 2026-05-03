@@ -318,7 +318,9 @@ ${meaning ? `<span>${meaning}</span>` : ""}
    ========================= */
 let lastMouse = { x: 20, y: 20 };
 
-function show(html){
+// anchorRect: the bounding rect of the hovered word; box is placed below it.
+// Falls back to lastMouse when not provided.
+function show(html, anchorRect){
 
     let box = document.getElementById("dictBox");
 
@@ -334,18 +336,14 @@ function show(html){
 
     box.innerHTML = html;
 
-    // If there is a selection range, use it; else position by mouse (for hover mode)
-    let sel = window.getSelection();
-    let range = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
-
     let left, top;
 
-    if(range && (range.width || range.height)){
-        left = range.x;
-        top = range.y + 20;
+    if(anchorRect && (anchorRect.width || anchorRect.height)){
+        left = anchorRect.left;
+        top  = anchorRect.bottom + POPUP_VERTICAL_OFFSET;
     } else {
         left = lastMouse.x + 12;
-        top = lastMouse.y + 12;
+        top  = lastMouse.y + 12;
     }
 
     if(left+340 > window.innerWidth) left = window.innerWidth - 350;
@@ -406,7 +404,7 @@ function resolve(word, cb){
 /* =========================
    🎯 MAIN LOGIC
    ========================= */
-function resolveDual(word){
+function resolveDual(word, anchorRect){
 
     word = clean(word);
 
@@ -416,7 +414,7 @@ function resolveDual(word){
     let nounDone = false;
     let verbDone = false;
 
-    show("Loading...");
+    show("Loading...", anchorRect);
 
     function tryRender(){
         if(!nounDone || !verbDone) return;
@@ -448,7 +446,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
             return;
         }
 
-        show(finalHTML);
+        show(finalHTML, anchorRect);
     }
 
     // Noun resolution must not "lock in" on non-noun results.
@@ -556,6 +554,7 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
    ========================= */
 
 const HOVER_DELAY_MS = 350;
+const POPUP_VERTICAL_OFFSET = 8;
 let hoverTimer = null;
 let lastWord = "";
 
@@ -564,19 +563,19 @@ function getWordFromPoint(x, y) {
 
   if (document.caretPositionFromPoint) {
     const pos = document.caretPositionFromPoint(x, y);
-    if (!pos || !pos.offsetNode) return "";
+    if (!pos || !pos.offsetNode) return { word: "", rect: null };
     range = document.createRange();
     range.setStart(pos.offsetNode, pos.offset);
     range.setEnd(pos.offsetNode, pos.offset);
   } else if (document.caretRangeFromPoint) {
     range = document.caretRangeFromPoint(x, y);
-    if (!range) return "";
+    if (!range) return { word: "", rect: null };
   } else {
-    return "";
+    return { word: "", rect: null };
   }
 
   const node = range.startContainer;
-  if (!node || node.nodeType !== Node.TEXT_NODE) return "";
+  if (!node || node.nodeType !== Node.TEXT_NODE) return { word: "", rect: null };
 
   const text = node.textContent || "";
   let i = range.startOffset;
@@ -590,7 +589,18 @@ function getWordFromPoint(x, y) {
   let end = i;
   while (end < text.length && isWordChar(text[end])) end++;
 
-  return clean(text.slice(start, end));
+  const word = clean(text.slice(start, end));
+
+  // Build a range spanning the whole word to get its bounding rect.
+  let rect = null;
+  try {
+    const wordRange = document.createRange();
+    wordRange.setStart(node, start);
+    wordRange.setEnd(node, end);
+    rect = wordRange.getBoundingClientRect();
+  } catch (_) { /* ignore */ }
+
+  return { word, rect };
 }
 
 function isValidWord(w) {
@@ -610,6 +620,9 @@ document.addEventListener("mousemove", (e) => {
   if (!isInsideOutput(e.target)) {
     if (hoverTimer) clearTimeout(hoverTimer);
     hoverTimer = null;
+    // Hide box when mouse leaves the output area (but not when it moves onto the box itself)
+    const box = document.getElementById("dictBox");
+    if (box && !box.contains(e.target)) { box.remove(); lastWord = ""; }
     return;
   }
 
@@ -619,10 +632,13 @@ document.addEventListener("mousemove", (e) => {
   const box = document.getElementById("dictBox");
   if (box && box.contains(e.target)) return;
 
-  const w = getWordFromPoint(e.clientX, e.clientY);
+  const { word: w, rect: wordRect } = getWordFromPoint(e.clientX, e.clientY);
   if (!isValidWord(w)) {
     if (hoverTimer) clearTimeout(hoverTimer);
     hoverTimer = null;
+    // Hide box when mouse is over whitespace or a non-word character
+    const box = document.getElementById("dictBox");
+    if (box) { box.remove(); lastWord = ""; }
     return;
   }
 
@@ -631,7 +647,7 @@ document.addEventListener("mousemove", (e) => {
   if (hoverTimer) clearTimeout(hoverTimer);
   hoverTimer = setTimeout(() => {
     lastWord = w;
-    resolveDual(w);
+    resolveDual(w, wordRect);
   }, HOVER_DELAY_MS);
 });
 
@@ -640,7 +656,7 @@ document.addEventListener("mousemove", (e) => {
    ========================= */
 document.addEventListener("mousedown", e=>{
     let box=document.getElementById("dictBox");
-    if(box && !box.contains(e.target)) box.remove();
+    if(box && !box.contains(e.target)) { box.remove(); lastWord = ""; }
 });
 
 /* =========================
