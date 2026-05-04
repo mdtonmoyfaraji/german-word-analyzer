@@ -78,7 +78,7 @@ async function api(word, callback){
    🔍 FIND BASE WORD (e.g. plural → singular)
    ========================= */
 // Pre-compiled regex for Pattern 1 (anchored "form of" keywords at definition start).
-const RE_FINDBASE_P1 = /^(?:plural of|past of|participle of|form of|inflection of)\s+([A-Za-zÄÖÜäöüß-]+)/i;
+const RE_FINDBASE_P1 = /^(?:plural of|past of|participle of|form of|inflection of|past participle of)\s+([A-Za-zÄÖÜäöüß-]+)/i;
 // Pre-compiled regex for Pattern 2 (any "of <word>" occurrence used with "form of" tag).
 const RE_FINDBASE_P2 = /\bof\s+([A-Za-zÄÖÜäöüß-]+)/gi;
 
