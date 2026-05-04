@@ -19,8 +19,9 @@ addStyle(`
     overflow-x: hidden;
     word-wrap: break-word;
     backdrop-filter: blur(10px);
-    background: rgba(0,0,0,0.8);
-    color: #fff;
+    background: var(--color-dictbox-bg, rgba(20,20,20,0.93));
+    color: var(--color-dictbox-text, #fff);
+    border: 1px solid var(--color-dictbox-border, rgba(255,255,255,0.12));
     padding: 12px;
     border-radius: 10px;
     z-index: 999999;
@@ -317,6 +318,11 @@ ${meaning ? `<span>${meaning}</span>` : ""}
    🖥️ SHOW POPUP BOX
    ========================= */
 let lastMouse = { x: 20, y: 20 };
+// Anchor position captured when the hover timer fires (word's bounding rect).
+// Used so the box stays positioned below the word even after the API resolves.
+let hoverAnchor = null;
+
+const BOX_W = 320; // matches #dictBox width (300px) + padding buffer
 
 function show(html){
 
@@ -334,26 +340,24 @@ function show(html){
 
     box.innerHTML = html;
 
-    // If there is a selection range, use it; else position by mouse (for hover mode)
-    let sel = window.getSelection();
-    let range = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
-
     let left, top;
 
-    if(range && (range.width || range.height)){
-        left = range.x;
-        top = range.y + 20;
+    if(hoverAnchor){
+        left = hoverAnchor.left;
+        top  = hoverAnchor.top;
     } else {
         left = lastMouse.x + 12;
-        top = lastMouse.y + 12;
+        top  = lastMouse.y + 20;
     }
 
-    if(left+340 > window.innerWidth) left = window.innerWidth - 350;
-    if(top+300 > window.innerHeight) top = top - 320;
-    if(top < 10) top = 10;
+    // Keep box within the viewport
+    if(left + BOX_W > window.innerWidth)  left = window.innerWidth - BOX_W;
+    if(left < 10) left = 10;
+    if(top + 320 > window.innerHeight)  top  = hoverAnchor ? hoverAnchor.top - 320 - 10 : lastMouse.y - 330;
+    if(top < 10)  top = 10;
 
-    box.style.left = left+"px";
-    box.style.top = top+"px";
+    box.style.left = left + "px";
+    box.style.top  = top  + "px";
 }
 
 /* =========================
@@ -406,9 +410,14 @@ function resolve(word, cb){
 /* =========================
    🎯 MAIN LOGIC
    ========================= */
+// Generation counter: incremented each time we start resolving a new word.
+// Callbacks check their captured gen value against this before calling show().
+let resolveGeneration = 0;
+
 function resolveDual(word){
 
     word = clean(word);
+    const gen = ++resolveGeneration;
 
     let nounHTML="", verbHTML="", fallbackMeaning="";
     let synSet=new Set(), antSet=new Set();
@@ -419,6 +428,8 @@ function resolveDual(word){
     show("Loading...");
 
     function tryRender(){
+        // Discard this result if a newer word lookup has started
+        if(gen !== resolveGeneration) return;
         if(!nounDone || !verbDone) return;
 
         let synStr=[...synSet].join(", ");
@@ -557,7 +568,59 @@ ${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
 
 const HOVER_DELAY_MS = 350;
 let hoverTimer = null;
-let lastWord = "";
+let lastWord = "";    // word whose box is currently shown
+let pendingWord = ""; // word that is being timed (delay not yet elapsed)
+
+/* Return the bounding rect of the word at viewport coordinates (x, y),
+   or null if the point is not over a word character. */
+function getWordRectAtPoint(x, y) {
+    let range = null;
+
+    if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(x, y);
+        if (!pos || !pos.offsetNode) return null;
+        range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+        range.setEnd(pos.offsetNode, pos.offset);
+    } else if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(x, y);
+        if (!range) return null;
+    } else {
+        return null;
+    }
+
+    const node = range.startContainer;
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+
+    const text = node.textContent || "";
+    let i = range.startOffset;
+    if (i > 0 && i === text.length) i--;
+
+    const isWordChar = ch => /[A-Za-zÄÖÜäöüß-]/.test(ch);
+
+    let start = i;
+    while (start > 0 && isWordChar(text[start - 1])) start--;
+    let end = i;
+    while (end < text.length && isWordChar(text[end])) end++;
+
+    if (start >= end) return null;
+
+    try {
+        range.setStart(node, start);
+        range.setEnd(node, end);
+        return range.getBoundingClientRect();
+    } catch (err) {
+        return null;
+    }
+}
+
+function hideBox() {
+    const box = document.getElementById("dictBox");
+    if (box) box.remove();
+    lastWord   = "";
+    pendingWord = "";
+    hoverAnchor = null;
+}
 
 function getWordFromPoint(x, y) {
   let range = null;
@@ -606,33 +669,74 @@ function isInsideOutput(target) {
 }
 
 document.addEventListener("mousemove", (e) => {
-  // Only trigger when hovering text inside #output (the highlighted view)
-  if (!isInsideOutput(e.target)) {
+    const box = document.getElementById("dictBox");
+
+    // Hovering over the popup box itself — do nothing (keep box visible)
+    if (box && box.contains(e.target)) return;
+
+    lastMouse.x = e.clientX;
+    lastMouse.y = e.clientY;
+
+    // Mouse outside the #output area → hide box immediately
+    if (!isInsideOutput(e.target)) {
+        if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+        hideBox();
+        return;
+    }
+
+    const w = getWordFromPoint(e.clientX, e.clientY);
+
+    // Not over a valid word (e.g. whitespace) → hide box
+    if (!isValidWord(w)) {
+        if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+        hideBox();
+        return;
+    }
+
+    // Still on the word whose box is currently visible — nothing to do
+    if (w === lastWord) return;
+
+    // Still on the word we're already waiting to show — don't reset the timer
+    if (w === pendingWord) return;
+
+    // New word detected — hide previous box, start delay timer
+    if (box) box.remove();
+    lastWord    = "";
+    pendingWord = w;
+    hoverAnchor = null;
+
     if (hoverTimer) clearTimeout(hoverTimer);
-    hoverTimer = null;
-    return;
-  }
 
-  lastMouse.x = e.clientX;
-  lastMouse.y = e.clientY;
+    const capturedX = e.clientX;
+    const capturedY = e.clientY;
 
-  const box = document.getElementById("dictBox");
-  if (box && box.contains(e.target)) return;
+    hoverTimer = setTimeout(() => {
+        hoverTimer = null;
 
-  const w = getWordFromPoint(e.clientX, e.clientY);
-  if (!isValidWord(w)) {
-    if (hoverTimer) clearTimeout(hoverTimer);
-    hoverTimer = null;
-    return;
-  }
+        // Compute anchor: position box just below the hovered word's text
+        const rect = getWordRectAtPoint(capturedX, capturedY);
+        if (rect && rect.width > 0) {
+            let anchorLeft = rect.left;
+            let anchorTop  = rect.bottom + 8;
 
-  if (w === lastWord) return;
+            if (anchorLeft + BOX_W > window.innerWidth) anchorLeft = window.innerWidth - BOX_W;
+            if (anchorLeft < 10) anchorLeft = 10;
 
-  if (hoverTimer) clearTimeout(hoverTimer);
-  hoverTimer = setTimeout(() => {
-    lastWord = w;
-    resolveDual(w);
-  }, HOVER_DELAY_MS);
+            // If not enough space below, flip above
+            if (anchorTop + 320 > window.innerHeight) {
+                anchorTop = rect.top - 320 - 8;
+            }
+            if (anchorTop < 10) anchorTop = 10;
+
+            hoverAnchor = { left: anchorLeft, top: anchorTop };
+        } else {
+            hoverAnchor = { left: capturedX + 12, top: capturedY + 20 };
+        }
+
+        lastWord    = w;
+        pendingWord = "";
+        resolveDual(w);
+    }, HOVER_DELAY_MS);
 });
 
 /* =========================
@@ -640,7 +744,12 @@ document.addEventListener("mousemove", (e) => {
    ========================= */
 document.addEventListener("mousedown", e=>{
     let box=document.getElementById("dictBox");
-    if(box && !box.contains(e.target)) box.remove();
+    if(box && !box.contains(e.target)){
+        box.remove();
+        lastWord   = "";
+        pendingWord = "";
+        hoverAnchor = null;
+    }
 });
 
 /* =========================

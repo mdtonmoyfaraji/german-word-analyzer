@@ -5,12 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>German Word Analyser</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Apply saved theme before page renders to avoid flash -->
+    <script>
+    (function(){
+        const pref = localStorage.getItem('theme-preference') || 'device';
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = pref === 'dark' || (pref === 'device' && prefersDark);
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    })();
+    </script>
 </head>
 <body>
 
 <div class="page-container">
 
-    <h1>German Word Analyser</h1>
+    <!-- PAGE HEADER: title + theme switcher -->
+    <div class="page-header">
+        <h1>German Word Analyser</h1>
+        <div class="theme-switcher">
+            <button class="theme-btn" data-theme-val="light" title="Light mode">☀️ Light</button>
+            <button class="theme-btn" data-theme-val="dark"  title="Dark mode">🌙 Dark</button>
+            <button class="theme-btn" data-theme-val="device" title="Use device setting">💻 Device</button>
+        </div>
+    </div>
 
     <div class="layout">
 
@@ -64,6 +81,7 @@
 <script src="assets/js/script.js"></script>
 
 <script>
+/* ---- Sidebar search ---- */
 function sidebarSearch() {
     var word = document.getElementById("sidebarInput").value.trim();
     var resultEl = document.getElementById("sidebarResult");
@@ -77,6 +95,39 @@ function sidebarSearch() {
         resultEl.innerHTML = "<em>Dictionary not available.</em>";
     }
 }
+
+/* ---- Theme switcher ---- */
+(function () {
+    var STORAGE_KEY = 'theme-preference';
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function applyTheme(pref) {
+        var isDark = pref === 'dark' || (pref === 'device' && prefersDark.matches);
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        document.querySelectorAll('.theme-btn').forEach(function (btn) {
+            btn.classList.toggle('active', btn.dataset.themeVal === pref);
+        });
+    }
+
+    // Apply saved preference and mark active button
+    var savedPref = localStorage.getItem(STORAGE_KEY) || 'device';
+    applyTheme(savedPref);
+
+    // Button clicks
+    document.querySelectorAll('.theme-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var val = btn.dataset.themeVal;
+            localStorage.setItem(STORAGE_KEY, val);
+            applyTheme(val);
+        });
+    });
+
+    // React to OS-level preference changes (for "device" mode)
+    prefersDark.addEventListener('change', function () {
+        var current = localStorage.getItem(STORAGE_KEY) || 'device';
+        if (current === 'device') applyTheme('device');
+    });
+})();
 </script>
 
 </body>

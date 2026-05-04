@@ -5,10 +5,63 @@
   box-sizing: border-box;
 }
 /* =============================================
-   PAGE CONTAINER — centered, max-width
+   CSS VARIABLES — dark mode defaults
    ============================================= */
 :root {
     --layout-gap: 16px;
+
+    /* dark theme */
+    --color-bg-page:    #111111;
+    --color-bg-main:    #1e1e1e;
+    --color-bg-output:  #121212;
+    --color-text:       #ffffff;
+    --color-text-muted: #cccccc;
+    --color-text-soft:  #eeeeee;
+    --color-input-bg:   #121212;
+    --color-input-border: #555555;
+    --color-sidebar-card-bg: rgba(255,255,255,0.05);
+    --color-btn-bg:     #3a3a3a;
+    --color-btn-text:   #ffffff;
+    --color-btn-hover:  #555555;
+    --color-dictbox-bg: rgba(20,20,20,0.93);
+    --color-dictbox-text: #ffffff;
+    --color-dictbox-border: rgba(255,255,255,0.12);
+    --color-h1:         #ffffff;
+    --color-theme-btn-active-bg: #555555;
+    --color-theme-btn-active-text: #ffffff;
+}
+
+/* =============================================
+   LIGHT THEME OVERRIDES
+   ============================================= */
+[data-theme="light"] {
+    --color-bg-page:    #f4f4f4;
+    --color-bg-main:    #ffffff;
+    --color-bg-output:  #f0f0f0;
+    --color-text:       #111111;
+    --color-text-muted: #555555;
+    --color-text-soft:  #333333;
+    --color-input-bg:   #ffffff;
+    --color-input-border: #bbbbbb;
+    --color-sidebar-card-bg: rgba(0,0,0,0.05);
+    --color-btn-bg:     #e0e0e0;
+    --color-btn-text:   #111111;
+    --color-btn-hover:  #cccccc;
+    --color-dictbox-bg: rgba(255,255,255,0.97);
+    --color-dictbox-text: #111111;
+    --color-dictbox-border: rgba(0,0,0,0.15);
+    --color-h1:         #111111;
+    --color-theme-btn-active-bg: #333333;
+    --color-theme-btn-active-text: #ffffff;
+}
+
+/* =============================================
+   PAGE CONTAINER — centered, max-width
+   ============================================= */
+body {
+    background: var(--color-bg-page);
+    color: var(--color-text);
+    transition: background 0.2s, color 0.2s;
 }
 
 .page-container {
@@ -55,11 +108,59 @@
 }
 
 /* =============================================
+   PAGE HEADER
+   ============================================= */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 0 12px;
+}
+
+.page-header h1 {
+    color: var(--color-h1);
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+}
+
+/* =============================================
+   THEME SWITCHER
+   ============================================= */
+.theme-switcher {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.theme-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    margin: 0;
+}
+
+.theme-btn:hover {
+    background: var(--color-btn-hover);
+}
+
+.theme-btn.active {
+    background: var(--color-theme-btn-active-bg);
+    color: var(--color-theme-btn-active-text);
+    border-color: transparent;
+}
+
+/* =============================================
    EXISTING BOX STYLES
    ============================================= */
 .box {
     width: 100%;
-    background: #1e1e1e;
+    background: var(--color-bg-main);
     padding: 20px;
     border-radius: 10px;
     box-sizing: border-box;
@@ -77,12 +178,14 @@ textarea,
     outline: none;
 }
 textarea {
-    
+    background: var(--color-input-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-input-border);
 }
 
 #output {
-    background: #121212;
-    color: #ffffff;
+    background: var(--color-bg-output);
+    color: var(--color-text);
     white-space: pre-wrap;
 }
 
@@ -95,7 +198,13 @@ button {
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
-    border: none;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-btn-bg);
+    color: var(--color-btn-text);
+}
+
+button:hover {
+    background: var(--color-btn-hover);
 }
 
 /* colors */
@@ -115,8 +224,8 @@ button {
     width: 260px;
     max-height: 300px;
     overflow-y: auto;
-    background: rgba(0,0,0,0.85);
-    color: white;
+    background: var(--color-dictbox-bg);
+    color: var(--color-dictbox-text);
     padding: 10px;
     border-radius: 8px;
     font-size: 13px;
@@ -128,11 +237,11 @@ button {
    SIDEBAR
    ============================================= */
 .col-sidebar {
-    background: #1e1e1e;
+    background: var(--color-bg-main);
     border-radius: 10px;
     padding: 16px;
     box-sizing: border-box;
-    color: #fff;
+    color: var(--color-text);
 }
 
 .sidebar-label {
@@ -140,7 +249,7 @@ button {
     font-weight: bold;
     margin-bottom: 8px;
     font-size: 14px;
-    color: #ccc;
+    color: var(--color-text-muted);
 }
 
 .sidebar-input-row {
@@ -153,9 +262,9 @@ button {
     padding: 8px;
     font-size: 14px;
     border-radius: 6px;
-    border: 1px solid #555;
-    background: #121212;
-    color: #fff;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-input-bg);
+    color: var(--color-text);
     box-sizing: border-box;
     /* outline: none; */
 }
@@ -172,7 +281,7 @@ button {
 .sidebar-result {
     margin-top: 14px;
     font-size: 13px;
-    color: #eee;
+    color: var(--color-text-soft);
     line-height: 1.5;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -183,7 +292,7 @@ button {
 .sidebar-result .synant {
     margin-bottom: 10px;
     padding: 8px;
-    background: rgba(255,255,255,0.05);
+    background: var(--color-sidebar-card-bg);
     border-radius: 6px;
 }
 
