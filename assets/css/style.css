@@ -29,6 +29,21 @@
     --color-h1:         #ffffff;
     --color-theme-btn-active-bg: #555555;
     --color-theme-btn-active-text: #ffffff;
+
+    /* header / footer / nav / social */
+    --color-header-bg:        #1a1a1a;
+    --color-header-border:    rgba(255,255,255,0.08);
+    --color-footer-bg:        #161616;
+    --color-footer-border:    rgba(255,255,255,0.08);
+    --color-nav-link:         #cccccc;
+    --color-nav-link-hover:   #ffffff;
+    --color-nav-link-active:  #4b98c2;
+    --color-social-bg:        rgba(255,255,255,0.09);
+    --color-social-hover-bg:  #4b98c2;
+    --color-social-hover-txt: #ffffff;
+    --color-toggle-bg:        #333333;
+    --color-toggle-border:    #555555;
+    --color-toggle-text:      #ffffff;
 }
 
 /* =============================================
@@ -53,6 +68,21 @@
     --color-h1:         #111111;
     --color-theme-btn-active-bg: #333333;
     --color-theme-btn-active-text: #ffffff;
+
+    /* header / footer / nav / social */
+    --color-header-bg:        #ffffff;
+    --color-header-border:    rgba(0,0,0,0.10);
+    --color-footer-bg:        #f0f0f0;
+    --color-footer-border:    rgba(0,0,0,0.10);
+    --color-nav-link:         #444444;
+    --color-nav-link-hover:   #111111;
+    --color-nav-link-active:  #2a7ab5;
+    --color-social-bg:        rgba(0,0,0,0.07);
+    --color-social-hover-bg:  #2a7ab5;
+    --color-social-hover-txt: #ffffff;
+    --color-toggle-bg:        #e8e8e8;
+    --color-toggle-border:    #cccccc;
+    --color-toggle-text:      #111111;
 }
 
 /* =============================================
@@ -67,7 +97,7 @@ body {
 .page-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 20px 16px 0;
 }
 
 /* =============================================
@@ -90,7 +120,7 @@ body {
     width: calc(20% - var(--layout-gap));
     min-width: 0;
     position: sticky;
-    top: 20px;
+    top: 84px;
 }
 
 /* =============================================
@@ -108,21 +138,8 @@ body {
 }
 
 /* =============================================
-   PAGE HEADER
+   PAGE HEADER — kept for reference (replaced by .site-header)
    ============================================= */
-.page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px 0 12px;
-}
-
-.page-header h1 {
-    color: var(--color-h1);
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-}
 
 /* =============================================
    THEME SWITCHER
@@ -308,3 +325,332 @@ button:hover {
     border-radius: 6px;
 }
 
+/* =============================================
+   SITE HEADER
+   ============================================= */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-header-bg);
+    border-bottom: 1px solid var(--color-header-border);
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    gap: 12px;
+}
+
+/* =============================================
+   HAMBURGER BUTTON
+   ============================================= */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    order: -1;
+}
+
+.hamburger-line {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hamburger.open .hamburger-line:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+.hamburger.open .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+.hamburger.open .hamburger-line:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+/* =============================================
+   SITE NAVIGATION
+   ============================================= */
+.site-nav {
+    flex: 1;
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link {
+    display: block;
+    padding: 8px 14px;
+    color: var(--color-nav-link);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: var(--color-nav-link-hover);
+    background: var(--color-social-bg);
+}
+
+.nav-link.active {
+    color: var(--color-nav-link-active);
+    background: var(--color-social-bg);
+}
+
+/* =============================================
+   HEADER RIGHT — toggle + logo
+   ============================================= */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* =============================================
+   THEME CYCLE TOGGLE BUTTON
+   ============================================= */
+.theme-cycle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid var(--color-toggle-border);
+    background: var(--color-toggle-bg);
+    color: var(--color-toggle-text);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.theme-cycle-btn:hover {
+    background: var(--color-btn-hover);
+}
+
+.theme-icon-wrap {
+    font-size: 13px;
+    line-height: 1;
+}
+
+/* Show only the icon for the current mode */
+.theme-cycle-btn .theme-icon-light,
+.theme-cycle-btn .theme-icon-dark,
+.theme-cycle-btn .theme-icon-device { display: none; }
+
+.theme-cycle-btn[data-theme-pref="light"]  .theme-icon-light  { display: inline; }
+.theme-cycle-btn[data-theme-pref="dark"]   .theme-icon-dark   { display: inline; }
+.theme-cycle-btn[data-theme-pref="device"] .theme-icon-device { display: inline; }
+
+/* =============================================
+   SITE LOGO
+   ============================================= */
+.site-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--color-text);
+    flex-shrink: 0;
+}
+
+.logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: block;
+}
+
+.logo-text {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    color: var(--color-h1);
+}
+
+/* =============================================
+   MOBILE NAV OVERLAY
+   ============================================= */
+.nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.nav-overlay.active {
+    display: block;
+}
+
+/* =============================================
+   SITE FOOTER
+   ============================================= */
+.site-footer {
+    background: var(--color-footer-bg);
+    border-top: 1px solid var(--color-footer-border);
+    margin-top: 48px;
+    padding: 28px 16px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.footer-copy {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.footer-copy strong {
+    color: var(--color-text);
+}
+
+.footer-powered {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.footer-powered a {
+    color: #4b98c2;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer-powered a:hover {
+    text-decoration: underline;
+}
+
+/* =============================================
+   SOCIAL LINKS
+   ============================================= */
+.footer-social {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--color-social-bg);
+    color: var(--color-text-muted);
+    font-size: 15px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.social-link:hover {
+    background: var(--color-social-hover-bg);
+    color: var(--color-social-hover-txt);
+    transform: translateY(-2px);
+}
+
+/* =============================================
+   RESPONSIVE — MOBILE HEADER & NAV
+   ============================================= */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .site-nav {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 260px;
+        height: 100vh;
+        background: var(--color-bg-main);
+        z-index: 1001;
+        padding: 80px 16px 30px;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
+        overflow-y: auto;
+    }
+
+    .site-nav.open {
+        left: 0;
+    }
+
+    .nav-list {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .nav-link {
+        font-size: 15px;
+        padding: 12px 16px;
+    }
+
+    /* Hide text label on small screens — icon only */
+    .theme-label {
+        display: none;
+    }
+
+    .theme-cycle-btn {
+        padding: 8px 10px;
+    }
+
+    .logo-text {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

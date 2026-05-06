@@ -3,36 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>German Word Analyser</title>
+
+    <!-- Primary Meta Tags -->
+    <title>German Word Analyser | Gender &amp; Dictionary Tool</title>
+    <meta name="title" content="German Word Analyser | Gender &amp; Dictionary Tool">
+    <meta name="description" content="Analyse German text for noun genders (der/die/das), search the dictionary, and learn German vocabulary. Free online tool. Powered by Germanverse.">
+    <meta name="keywords" content="German word analyser, German gender, der die das, German dictionary, German nouns, learn German, Germanverse, noun gender detector">
+    <meta name="author" content="Md Tonmoy Faraji">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mdtonmoyfaraji.github.io/german-word-analyzer/">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mdtonmoyfaraji.github.io/german-word-analyzer/">
+    <meta property="og:title" content="German Word Analyser | Gender &amp; Dictionary Tool">
+    <meta property="og:description" content="Analyse German text for noun genders (der/die/das), search the dictionary, and learn German vocabulary. Free online tool. Powered by Germanverse.">
+    <meta property="og:image" content="https://mdtonmoyfaraji.github.io/german-word-analyzer/assets/images/og-image.svg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="German Word Analyser – Analyse noun genders, search dictionary, learn German">
+    <meta property="og:site_name" content="German Word Analyser">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://mdtonmoyfaraji.github.io/german-word-analyzer/">
+    <meta name="twitter:title" content="German Word Analyser | Gender &amp; Dictionary Tool">
+    <meta name="twitter:description" content="Analyse German text for noun genders (der/die/das), search the dictionary, and learn German vocabulary. Powered by Germanverse.">
+    <meta name="twitter:image" content="https://mdtonmoyfaraji.github.io/german-word-analyzer/assets/images/og-image.svg">
+    <meta name="twitter:image:alt" content="German Word Analyser">
+    <meta name="twitter:creator" content="@mdtonmoyfaraji">
+    <meta name="twitter:site" content="@mdtonmoyfaraji">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/images/favicon.svg">
+    <meta name="theme-color" content="#dd0000">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
     <link rel="stylesheet" href="assets/css/style.css">
+
     <!-- Apply saved theme before page renders to avoid flash -->
     <script>
     (function(){
-        const pref = localStorage.getItem('theme-preference') || 'device';
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = pref === 'dark' || (pref === 'device' && prefersDark);
+        var pref = localStorage.getItem('theme-preference') || 'device';
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = pref === 'dark' || (pref === 'device' && prefersDark);
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     })();
     </script>
 </head>
 <body>
 
-<div class="page-container">
+<!-- ===================== SITE HEADER ===================== -->
+<header class="site-header">
+    <div class="header-inner">
 
-    <!-- PAGE HEADER: title + theme switcher -->
-    <div class="page-header">
-        <h1>German Word Analyser</h1>
-        <div class="theme-switcher">
-            <button class="theme-btn" data-theme-val="light" title="Light mode">☀️ Light</button>
-            <button class="theme-btn" data-theme-val="dark"  title="Dark mode">🌙 Dark</button>
-            <button class="theme-btn" data-theme-val="device" title="Use device setting">💻 Device</button>
+        <!-- Hamburger button (visible on mobile) -->
+        <button class="hamburger" id="hamburger"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false"
+                aria-controls="siteNav">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Main navigation -->
+        <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+            <ul class="nav-list">
+                <li><a href="#" class="nav-link active">Home</a></li>
+                <li><a href="#analyse" class="nav-link">Analyse</a></li>
+                <li><a href="#dictionary" class="nav-link">Dictionary</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Right side: theme toggle + logo -->
+        <div class="header-right">
+            <!-- Single cycling theme toggle -->
+            <button class="theme-cycle-btn" id="themeCycleBtn"
+                    data-theme-pref="device"
+                    aria-label="Toggle theme"
+                    title="Toggle theme">
+                <span class="theme-icon-wrap" aria-hidden="true">
+                    <i class="fa-solid fa-sun  theme-icon-light"></i>
+                    <i class="fa-solid fa-moon theme-icon-dark"></i>
+                    <i class="fa-solid fa-display theme-icon-device"></i>
+                </span>
+                <span class="theme-label">Device</span>
+            </button>
+
+            <!-- Logo (right side) -->
+            <a href="#" class="site-logo" aria-label="German Word Analyser – home">
+                <img src="assets/images/logo.svg" alt="GWA logo" class="logo-img" width="36" height="36">
+                <span class="logo-text">GWA</span>
+            </a>
         </div>
+
     </div>
+</header>
+
+<!-- Mobile nav overlay -->
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<div class="page-container">
 
     <div class="layout">
 
         <!-- LEFT COLUMN (80%) -->
-        <main class="col-main">
+        <main class="col-main" id="analyse">
             <div class="box">
 
                 <!-- TEXTAREA -->
@@ -52,7 +141,7 @@
         </main>
 
         <!-- RIGHT COLUMN (20%) — Dictionary Sidebar -->
-        <aside class="col-sidebar" aria-label="Dictionary search">
+        <aside class="col-sidebar" id="dictionary" aria-label="Dictionary search">
 
             <div class="sidebar-search">
                 <label for="sidebarInput" class="sidebar-label">Dictionary Search</label>
@@ -76,11 +165,54 @@
 
 </div><!-- /.page-container -->
 
+<!-- ===================== SITE FOOTER ===================== -->
+<footer class="site-footer" id="contact">
+    <div class="footer-inner">
+
+        <div class="footer-brand">
+            <p class="footer-copy">
+                &copy; <span id="footerYear"></span> <strong>Md Tonmoy Faraji</strong>
+            </p>
+            <p class="footer-powered">
+                Powered by
+                <a href="https://www.facebook.com/germanverse" target="_blank" rel="noopener noreferrer">Germanverse</a>
+            </p>
+        </div>
+
+        <div class="footer-social" aria-label="Social media links">
+            <a href="https://www.facebook.com/germanverse" target="_blank" rel="noopener noreferrer"
+               aria-label="Facebook" class="social-link">
+                <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer"
+               aria-label="Instagram" class="social-link">
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer"
+               aria-label="X (Twitter)" class="social-link">
+                <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer"
+               aria-label="LinkedIn" class="social-link">
+                <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer"
+               aria-label="WhatsApp" class="social-link">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+            </a>
+        </div>
+
+    </div>
+</footer>
+
 <script src="assets/js/hover-addon.js"></script>
 <script src="assets/js/dictionary.js"></script>
 <script src="assets/js/script.js"></script>
 
 <script>
+/* ---- Footer: auto copyright year ---- */
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
 /* ---- Sidebar search ---- */
 function sidebarSearch() {
     var word = document.getElementById("sidebarInput").value.trim();
@@ -96,36 +228,78 @@ function sidebarSearch() {
     }
 }
 
-/* ---- Theme switcher ---- */
+/* ---- Hamburger menu ---- */
+(function () {
+    var hamburger = document.getElementById('hamburger');
+    var siteNav   = document.getElementById('siteNav');
+    var overlay   = document.getElementById('navOverlay');
+
+    function closeNav() {
+        siteNav.classList.remove('open');
+        overlay.classList.remove('active');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openNav() {
+        siteNav.classList.add('open');
+        overlay.classList.add('active');
+        hamburger.classList.add('open');
+        hamburger.setAttribute('aria-expanded', 'true');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    hamburger.addEventListener('click', function () {
+        if (siteNav.classList.contains('open')) { closeNav(); } else { openNav(); }
+    });
+
+    overlay.addEventListener('click', closeNav);
+
+    /* Close nav when a link is clicked on mobile */
+    siteNav.querySelectorAll('.nav-link').forEach(function (link) {
+        link.addEventListener('click', closeNav);
+    });
+})();
+
+/* ---- Cycling theme toggle ---- */
 (function () {
     var STORAGE_KEY = 'theme-preference';
+    var CYCLE = ['device', 'light', 'dark'];
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    var btn = document.getElementById('themeCycleBtn');
+
+    var LABELS = { light: 'Light', dark: 'Dark', device: 'Device' };
+    var TITLES = {
+        light:  'Currently: Light mode — click for Dark',
+        dark:   'Currently: Dark mode — click for Device',
+        device: 'Currently: Device setting — click for Light'
+    };
 
     function applyTheme(pref) {
         var isDark = pref === 'dark' || (pref === 'device' && prefersDark.matches);
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        document.querySelectorAll('.theme-btn').forEach(function (btn) {
-            btn.classList.toggle('active', btn.dataset.themeVal === pref);
-        });
+        btn.setAttribute('data-theme-pref', pref);
+        btn.querySelector('.theme-label').textContent = LABELS[pref];
+        btn.title = TITLES[pref];
+        btn.setAttribute('aria-label', TITLES[pref]);
     }
 
-    // Apply saved preference and mark active button
+    /* Restore saved preference on load */
     var savedPref = localStorage.getItem(STORAGE_KEY) || 'device';
     applyTheme(savedPref);
 
-    // Button clicks
-    document.querySelectorAll('.theme-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var val = btn.dataset.themeVal;
-            localStorage.setItem(STORAGE_KEY, val);
-            applyTheme(val);
-        });
+    btn.addEventListener('click', function () {
+        var current = localStorage.getItem(STORAGE_KEY) || 'device';
+        var next    = CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
+        localStorage.setItem(STORAGE_KEY, next);
+        applyTheme(next);
     });
 
-    // React to OS-level preference changes (for "device" mode)
+    /* React to OS preference changes when in "device" mode */
     prefersDark.addEventListener('change', function () {
         var current = localStorage.getItem(STORAGE_KEY) || 'device';
-        if (current === 'device') applyTheme('device');
+        if (current === 'device') { applyTheme('device'); }
     });
 })();
 </script>

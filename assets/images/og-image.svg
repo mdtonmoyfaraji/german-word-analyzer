@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#111111"/>
+  <!-- German flag accent stripes -->
+  <rect width="1200" height="24" fill="#1a1a1a"/>
+  <rect y="24" width="1200" height="24" fill="#dd0000"/>
+  <rect y="48" width="1200" height="24" fill="#ffce00"/>
+  <!-- Logo mark -->
+  <rect x="480" y="130" width="240" height="80" rx="12" fill="#dd0000"/>
+  <text x="600" y="170" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial,sans-serif" font-weight="700" font-size="40" fill="#fff" letter-spacing="2">GWA</text>
+  <!-- Main title -->
+  <text x="600" y="295" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial,sans-serif" font-weight="700" font-size="68" fill="#ffffff">German Word Analyser</text>
+  <!-- Subtitle -->
+  <text x="600" y="375" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial,sans-serif" font-size="30" fill="#4b98c2">Analyse · Dictionary · Learn German</text>
+  <!-- Divider -->
+  <rect x="400" y="420" width="400" height="2" rx="1" fill="rgba(255,255,255,0.15)"/>
+  <!-- Powered by -->
+  <text x="600" y="470" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial,sans-serif" font-size="22" fill="#888888">Powered by Germanverse</text>
+  <!-- URL -->
+  <text x="600" y="560" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial,sans-serif" font-size="18" fill="#555555">mdtonmoyfaraji.github.io/german-word-analyzer</text>
+</svg>
