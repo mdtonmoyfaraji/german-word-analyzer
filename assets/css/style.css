@@ -228,10 +228,6 @@ button {
     color: var(--color-btn-text);
 }
 
-button:hover {
-    background: var(--color-btn-hover);
-}
-
 /* colors */
 .masculine { color: #4b98c2; }
 .feminine { color: #d75656; }
