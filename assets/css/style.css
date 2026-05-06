@@ -92,12 +92,16 @@ body {
     background: var(--color-bg-page);
     color: var(--color-text);
     transition: background 0.2s, color 0.2s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .page-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px 16px 0;
+    flex: 1;
 }
 
 /* =============================================
@@ -181,6 +185,7 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-sizing: border-box;
+    position: relative;
 }
 
 textarea,
@@ -362,7 +367,6 @@ button:hover {
     padding: 0;
     margin: 0;
     flex-shrink: 0;
-    order: -1;
 }
 
 .hamburger-line {
@@ -423,14 +427,13 @@ button:hover {
 }
 
 /* =============================================
-   HEADER RIGHT — toggle + logo
+   HEADER RIGHT — toggle + hamburger (mobile)
    ============================================= */
 .header-right {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
-    margin-left: auto;
 }
 
 /* =============================================
@@ -599,10 +602,96 @@ button:hover {
 }
 
 /* =============================================
+   MOBILE NAV CLOSE BUTTON
+   ============================================= */
+.nav-close-btn {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.nav-close-btn:hover {
+    background: var(--color-social-bg);
+}
+
+/* =============================================
+   TEXTAREA INFO BUTTON & POPUP
+   ============================================= */
+.textarea-info-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 17px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background 0.2s;
+}
+
+.textarea-info-btn:hover {
+    color: var(--color-text);
+    background: var(--color-social-bg);
+}
+
+.textarea-info-popup {
+    position: absolute;
+    top: 48px;
+    right: 14px;
+    background: var(--color-bg-main);
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    line-height: 1.6;
+}
+
+.textarea-info-popup p {
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.textarea-info-popup p:last-child {
+    margin-bottom: 0;
+}
+
+/* =============================================
    RESPONSIVE — MOBILE HEADER & NAV
    ============================================= */
 @media (max-width: 768px) {
     .hamburger {
+        display: flex;
+    }
+
+    .nav-close-btn {
         display: flex;
     }
 
@@ -614,7 +703,7 @@ button:hover {
         height: 100vh;
         background: var(--color-bg-main);
         z-index: 1001;
-        padding: 80px 16px 30px;
+        padding: 68px 16px 30px;
         transition: left 0.3s ease;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
         overflow-y: auto;

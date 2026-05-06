@@ -66,18 +66,18 @@
 <header class="site-header">
     <div class="header-inner">
 
-        <!-- Hamburger button (visible on mobile) -->
-        <button class="hamburger" id="hamburger"
-                aria-label="Toggle navigation menu"
-                aria-expanded="false"
-                aria-controls="siteNav">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+        <!-- Logo (left side) -->
+        <a href="#" class="site-logo" aria-label="German Word Analyser – home">
+            <img src="assets/images/logo.svg" alt="GWA logo" class="logo-img" width="36" height="36">
+            <span class="logo-text">GWA</span>
+        </a>
 
         <!-- Main navigation -->
         <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+            <!-- Close button (visible on mobile only) -->
+            <button class="nav-close-btn" id="navCloseBtn" aria-label="Close navigation menu">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
             <ul class="nav-list">
                 <li><a href="#" class="nav-link active">Home</a></li>
                 <li><a href="#analyse" class="nav-link">Analyse</a></li>
@@ -87,7 +87,7 @@
             </ul>
         </nav>
 
-        <!-- Right side: theme toggle + logo -->
+        <!-- Right side: theme toggle + hamburger -->
         <div class="header-right">
             <!-- Single cycling theme toggle -->
             <button class="theme-cycle-btn" id="themeCycleBtn"
@@ -102,11 +102,15 @@
                 <span class="theme-label">Device</span>
             </button>
 
-            <!-- Logo (right side) -->
-            <a href="#" class="site-logo" aria-label="German Word Analyser – home">
-                <img src="assets/images/logo.svg" alt="GWA logo" class="logo-img" width="36" height="36">
-                <span class="logo-text">GWA</span>
-            </a>
+            <!-- Hamburger button (visible on mobile only) -->
+            <button class="hamburger" id="hamburger"
+                    aria-label="Toggle navigation menu"
+                    aria-expanded="false"
+                    aria-controls="siteNav">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
         </div>
 
     </div>
@@ -123,6 +127,16 @@
         <!-- LEFT COLUMN (80%) -->
         <main class="col-main" id="analyse">
             <div class="box">
+
+                <!-- Info button: color legend -->
+                <button class="textarea-info-btn" id="textareaInfoBtn" aria-label="Color legend" title="Color legend">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                </button>
+                <div class="textarea-info-popup" id="textareaInfoPopup" hidden>
+                    <p><span class="masculine">&#9679;</span> <strong>Blue</strong> &mdash; Masculine (der)</p>
+                    <p><span class="feminine">&#9679;</span> <strong>Red</strong> &mdash; Feminine (die)</p>
+                    <p><span class="neuter">&#9679;</span> <strong>Green</strong> &mdash; Neuter (das)</p>
+                </div>
 
                 <!-- TEXTAREA -->
                 <textarea id="inputText" placeholder="Paste text..."></textarea>
@@ -256,6 +270,10 @@ function sidebarSearch() {
 
     overlay.addEventListener('click', closeNav);
 
+    /* Close nav via the X button inside the drawer */
+    const navCloseBtn = document.getElementById('navCloseBtn');
+    if (navCloseBtn) { navCloseBtn.addEventListener('click', closeNav); }
+
     /* Close nav when a link is clicked on mobile */
     siteNav.querySelectorAll('.nav-link').forEach(function (link) {
         link.addEventListener('click', closeNav);
@@ -300,6 +318,26 @@ function sidebarSearch() {
     prefersDark.addEventListener('change', function () {
         const current = localStorage.getItem(STORAGE_KEY) || 'device';
         if (current === 'device') { applyTheme('device'); }
+    });
+})();
+
+/* ---- Color-legend info button ---- */
+(function () {
+    const infoBtn   = document.getElementById('textareaInfoBtn');
+    const infoPopup = document.getElementById('textareaInfoPopup');
+    if (!infoBtn || !infoPopup) return;
+
+    infoBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        infoPopup.hidden = !infoPopup.hidden;
+    });
+
+    document.addEventListener('click', function () {
+        infoPopup.hidden = true;
+    });
+
+    infoPopup.addEventListener('click', function (e) {
+        e.stopPropagation();
     });
 })();
 </script>
