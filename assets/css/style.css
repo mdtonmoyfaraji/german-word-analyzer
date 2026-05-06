@@ -396,6 +396,7 @@ button {
 
 .nav-list {
     display: flex;
+       justify-content: end;
     list-style: none;
     gap: 2px;
     margin: 0;
