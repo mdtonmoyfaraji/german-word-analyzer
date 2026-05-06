@@ -3,6 +3,10 @@ window.detectGender = function () {
     const outputDiv = document.getElementById("output");
 
     const text = textarea.value;
+
+    if (!text.trim()) {
+        return;
+    }
     const words = text.split(/(\s+|[.,\/#!$%\^&\*;:{}=\-_`~()])/g);
 
     let result = "";
