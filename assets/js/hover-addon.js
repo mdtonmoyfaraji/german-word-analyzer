@@ -447,10 +447,9 @@ function resolveDual(word){
         if(synStr || antStr){
             finalHTML += `
 <div class="synant">
-<b>SYN / ANT</b><br>
-${synStr ? `<span><b>Syn:</b> ${synStr}</span>` : ""}
+${synStr ? `<span><b>SYNONYMS</b><br> ${synStr}</span>` : ""}
 ${synStr && antStr ? "<br>" : ""}
-${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
+${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
 </div>`;
         }
 
