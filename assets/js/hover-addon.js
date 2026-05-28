@@ -13,8 +13,8 @@ function addStyle(cssText) {
 addStyle(`
 #dictBox {
     position: fixed;
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     overflow-y: auto;
     overflow-x: hidden;
     word-wrap: break-word;
@@ -329,7 +329,8 @@ let lastMouse = { x: 20, y: 20 };
 // Used so the box stays positioned below the word even after the API resolves.
 let hoverAnchor = null;
 
-const BOX_W = 320; // matches #dictBox width (300px) + padding buffer
+const BOX_W = 270; // matches #dictBox width (250px) + padding buffer
+const BOX_H = 270; // matches #dictBox height (250px) + padding buffer
 
 function show(html){
 
@@ -360,7 +361,7 @@ function show(html){
     // Keep box within the viewport
     if(left + BOX_W > window.innerWidth)  left = window.innerWidth - BOX_W;
     if(left < 10) left = 10;
-    if(top + 320 > window.innerHeight)  top  = hoverAnchor ? hoverAnchor.top - 320 - 10 : lastMouse.y - 330;
+    if(top + BOX_H > window.innerHeight)  top  = hoverAnchor ? hoverAnchor.top - BOX_H - 10 : lastMouse.y - (BOX_H + 10);
     if(top < 10)  top = 10;
 
     box.style.left = left + "px";
