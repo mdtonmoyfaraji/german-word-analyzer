@@ -786,9 +786,8 @@ window.dictSearch = function(word, targetEl){
         if(synStr || antStr){
             finalHTML += `
 <div class="synant">
-<b>SYN / ANT</b><br>
-${synStr ? `<span><b>Syn:</b> ${synStr}</span>` : ""}
-${antStr ? `<span><b>Ant:</b> ${antStr}</span>` : ""}
+${synStr ? `<span><b>SYNONYMS</b><br> ${synStr}</span>` : ""}
+${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
 </div>`;
         }
 
