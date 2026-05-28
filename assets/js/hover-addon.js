@@ -787,6 +787,7 @@ window.dictSearch = function(word, targetEl){
             finalHTML += `
 <div class="synant">
 ${synStr ? `<span><b>SYNONYMS</b><br> ${synStr}</span>` : ""}
+${synStr && antStr ? "<br>" : ""}
 ${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
 </div>`;
         }
