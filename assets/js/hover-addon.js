@@ -361,7 +361,7 @@ function show(html){
     // Keep box within the viewport
     if(left + BOX_W > window.innerWidth)  left = window.innerWidth - BOX_W;
     if(left < 10) left = 10;
-    if(top + BOX_H > window.innerHeight)  top  = hoverAnchor ? hoverAnchor.top - BOX_H - 10 : lastMouse.y - (BOX_H + 10);
+    if(top + BOX_H > window.innerHeight)  top  = hoverAnchor ? hoverAnchor.top - BOX_H - 10 : lastMouse.y - BOX_H - 10;
     if(top < 10)  top = 10;
 
     box.style.left = left + "px";
