@@ -29,6 +29,13 @@ addStyle(`
     font-family: Arial;
 }
 hr { opacity: 0.1; }
+.noun, .verb, .synant, .fallback-meaning
+{
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+}
 `);
 
 /* =========================
@@ -438,7 +445,7 @@ function resolveDual(word){
         let finalHTML="";
 
         if(!nounHTML && !verbHTML && fallbackMeaning){
-            finalHTML += `<div><b>MEANING</b><br>${fallbackMeaning}</div>`;
+            finalHTML += `<div class="fallback-meaning"><b>MEANING</b><br>${fallbackMeaning}</div>`;
         }
 
         if(nounHTML) finalHTML+=nounHTML;
@@ -777,7 +784,7 @@ window.dictSearch = function(word, targetEl){
         let finalHTML="";
 
         if(!nounHTML && !verbHTML && fallbackMeaning){
-            finalHTML += `<div><b>MEANING</b><br>${fallbackMeaning}</div>`;
+            finalHTML += `<div class="fallback-meaning"><b>MEANING</b><br>${fallbackMeaning}</div>`;
         }
         if(nounHTML) finalHTML+=nounHTML;
         if(verbHTML) finalHTML+=verbHTML;
