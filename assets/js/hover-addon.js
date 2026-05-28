@@ -22,7 +22,7 @@ addStyle(`
     background: var(--color-dictbox-bg, rgba(20,20,20,0.93));
     color: var(--color-dictbox-text, #fff);
     border: 1px solid var(--color-dictbox-border, rgba(255,255,255,0.12));
-    padding: 12px;
+    padding: 8px;
     border-radius: 10px;
     z-index: 999999;
     font-size: 13px;
