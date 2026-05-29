@@ -676,6 +676,36 @@ function isInsideOutput(target) {
   return !!(output && output.style.display !== "none" && output.contains(target));
 }
 
+function getSelectionWord() {
+    const sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return "";
+
+    const raw = clean(sel.toString());
+    if (!raw) return "";
+
+    const match = raw.match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/);
+    return match ? match[0] : "";
+}
+
+function isSelectionInsideOutput(sel) {
+    const output = document.getElementById("output");
+    if (!output || output.style.display === "none") return false;
+
+    const anchor = sel.anchorNode;
+    const focus = sel.focusNode;
+    if (!anchor || !focus) return false;
+    return output.contains(anchor) && output.contains(focus);
+}
+
+function getSelectionAnchorRect(sel) {
+    try {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        if (rect && (rect.width > 0 || rect.height > 0)) return rect;
+    } catch (err) {}
+    return null;
+}
+
 document.addEventListener("mousemove", (e) => {
     const box = document.getElementById("dictBox");
 
@@ -746,6 +776,48 @@ document.addEventListener("mousemove", (e) => {
         resolveDual(w);
     }, HOVER_DELAY_MS);
 });
+
+/* =========================
+   ✂️ SELECTION TRIGGER (DESKTOP + MOBILE)
+   ========================= */
+let selectionTimer = null;
+
+function triggerFromSelection() {
+    const sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+    if (!isSelectionInsideOutput(sel)) return;
+
+    const w = getSelectionWord();
+    if (!isValidWord(w)) return;
+
+    if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+    pendingWord = "";
+    lastWord = w;
+
+    const rect = getSelectionAnchorRect(sel);
+    if (rect) {
+        let anchorLeft = rect.left;
+        let anchorTop = rect.bottom + 8;
+        if (anchorLeft + BOX_W > window.innerWidth) anchorLeft = window.innerWidth - BOX_W;
+        if (anchorLeft < 10) anchorLeft = 10;
+        if (anchorTop + 320 > window.innerHeight) anchorTop = rect.top - 320 - 8;
+        if (anchorTop < 10) anchorTop = 10;
+        hoverAnchor = { left: anchorLeft, top: anchorTop };
+    } else {
+        hoverAnchor = { left: lastMouse.x + 12, top: lastMouse.y + 20 };
+    }
+
+    resolveDual(w);
+}
+
+function scheduleSelectionTrigger() {
+    if (selectionTimer) clearTimeout(selectionTimer);
+    selectionTimer = setTimeout(triggerFromSelection, 80);
+}
+
+document.addEventListener("selectionchange", scheduleSelectionTrigger);
+document.addEventListener("mouseup", scheduleSelectionTrigger);
+document.addEventListener("touchend", scheduleSelectionTrigger, { passive: true });
 
 /* =========================
    ❌ CLOSE ON OUTSIDE CLICK
