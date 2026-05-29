@@ -680,8 +680,7 @@ function isInsideOutput(target) {
   return !!(output && output.style.display !== "none" && output.contains(target));
 }
 
-function getSelectionWord() {
-    const sel = window.getSelection && window.getSelection();
+function getSelectionWord(sel) {
     if (!sel || !sel.rangeCount || sel.isCollapsed) return "";
 
     const raw = clean(sel.toString());
@@ -791,8 +790,9 @@ function triggerFromSelection() {
     if (!sel || !sel.rangeCount || sel.isCollapsed) return;
     if (!isSelectionInsideOutput(sel)) return;
 
-    const w = getSelectionWord();
+    const w = getSelectionWord(sel);
     if (!isValidWord(w)) return;
+    if (w === lastWord && document.getElementById("dictBox")) return;
 
     if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
     pendingWord = "";
