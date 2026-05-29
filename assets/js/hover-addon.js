@@ -575,6 +575,10 @@ ${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
    ========================= */
 
 const HOVER_DELAY_MS = 350;
+const SELECTION_DELAY_MS = 80;
+const POPUP_LAYOUT_H = 320;
+const RE_WORD_PATTERN = /[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/;
+const RE_VALID_WORD = /^[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*$/;
 let hoverTimer = null;
 let lastWord = "";    // word whose box is currently shown
 let pendingWord = ""; // word that is being timed (delay not yet elapsed)
@@ -668,12 +672,43 @@ function isValidWord(w) {
   if (!w) return false;
   if (w.length < 2) return false;
   if (/\s/.test(w)) return false;
-  return /^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(w);
+  return RE_VALID_WORD.test(w);
 }
 
 function isInsideOutput(target) {
   const output = document.getElementById("output");
   return !!(output && output.style.display !== "none" && output.contains(target));
+}
+
+function getSelectionWord(sel) {
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return "";
+
+    const raw = clean(sel.toString());
+    if (!raw) return "";
+
+    const match = raw.match(RE_WORD_PATTERN);
+    return match ? match[0] : "";
+}
+
+function isSelectionInsideOutput(sel) {
+    const output = document.getElementById("output");
+    if (!output || output.style.display === "none") return false;
+
+    const anchor = sel.anchorNode;
+    const focus = sel.focusNode;
+    if (!anchor || !focus) return false;
+    return output.contains(anchor) && output.contains(focus);
+}
+
+function getSelectionAnchorRect(sel) {
+    try {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        if (rect && (rect.width > 0 || rect.height > 0)) return rect;
+    } catch (err) {
+        // Ignore invalid/stale ranges while the selection is being updated.
+    }
+    return null;
 }
 
 document.addEventListener("mousemove", (e) => {
@@ -731,8 +766,8 @@ document.addEventListener("mousemove", (e) => {
             if (anchorLeft < 10) anchorLeft = 10;
 
             // If not enough space below, flip above
-            if (anchorTop + 320 > window.innerHeight) {
-                anchorTop = rect.top - 320 - 8;
+            if (anchorTop + POPUP_LAYOUT_H > window.innerHeight) {
+                anchorTop = rect.top - POPUP_LAYOUT_H - 8;
             }
             if (anchorTop < 10) anchorTop = 10;
 
@@ -746,6 +781,54 @@ document.addEventListener("mousemove", (e) => {
         resolveDual(w);
     }, HOVER_DELAY_MS);
 });
+
+/* =========================
+   ✂️ SELECTION TRIGGER (DESKTOP + MOBILE)
+   ========================= */
+let selectionTimer = null;
+
+function triggerFromSelection() {
+    const sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+    if (!isSelectionInsideOutput(sel)) return;
+
+    const w = getSelectionWord(sel);
+    if (!isValidWord(w)) return;
+    if (w === lastWord && document.getElementById("dictBox")) return;
+
+    if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+    pendingWord = "";
+    lastWord = w;
+
+    const rect = getSelectionAnchorRect(sel);
+    if (rect) {
+        let anchorLeft = rect.left;
+        let anchorTop = rect.bottom + 8;
+        if (anchorLeft + BOX_W > window.innerWidth) anchorLeft = window.innerWidth - BOX_W;
+        if (anchorLeft < 10) anchorLeft = 10;
+        if (anchorTop + POPUP_LAYOUT_H > window.innerHeight) anchorTop = rect.top - POPUP_LAYOUT_H - 8;
+        if (anchorTop < 10) anchorTop = 10;
+        hoverAnchor = { left: anchorLeft, top: anchorTop };
+    } else {
+        hoverAnchor = { left: lastMouse.x + 12, top: lastMouse.y + 20 };
+    }
+
+    resolveDual(w);
+}
+
+function scheduleSelectionTrigger() {
+    const sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) {
+        if (selectionTimer) { clearTimeout(selectionTimer); selectionTimer = null; }
+        return;
+    }
+    if (selectionTimer) clearTimeout(selectionTimer);
+    selectionTimer = setTimeout(triggerFromSelection, SELECTION_DELAY_MS);
+}
+
+document.addEventListener("selectionchange", scheduleSelectionTrigger);
+document.addEventListener("mouseup", scheduleSelectionTrigger);
+document.addEventListener("touchend", scheduleSelectionTrigger, { passive: true });
 
 /* =========================
    ❌ CLOSE ON OUTSIDE CLICK
