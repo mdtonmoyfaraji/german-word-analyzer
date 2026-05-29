@@ -38,6 +38,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
     <link rel="apple-touch-icon" href="assets/images/favicon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#dd0000">
 
     <!-- Google Fonts -->
@@ -58,6 +59,13 @@
         const isDark = pref === 'dark' || (pref === 'device' && prefersDark);
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     })();
+
+    /* ---- PWA service worker ---- */
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/german-word-analyzer/sw.js');
+        });
+    }
     </script>
 </head>
 <body>
