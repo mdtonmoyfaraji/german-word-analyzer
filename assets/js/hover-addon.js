@@ -577,7 +577,7 @@ ${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
 const HOVER_DELAY_MS = 350;
 const SELECTION_DELAY_MS = 80;
 const POPUP_LAYOUT_H = 320;
-const RE_WORD_FRAGMENT = /[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/;
+const RE_WORD_PATTERN = /[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/;
 const RE_VALID_WORD = /^[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*$/;
 let hoverTimer = null;
 let lastWord = "";    // word whose box is currently shown
@@ -686,7 +686,7 @@ function getSelectionWord(sel) {
     const raw = clean(sel.toString());
     if (!raw) return "";
 
-    const match = raw.match(RE_WORD_FRAGMENT);
+    const match = raw.match(RE_WORD_PATTERN);
     return match ? match[0] : "";
 }
 
@@ -705,7 +705,9 @@ function getSelectionAnchorRect(sel) {
         const range = sel.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         if (rect && (rect.width > 0 || rect.height > 0)) return rect;
-    } catch (err) {}
+    } catch (err) {
+        // Ignore invalid/stale ranges while the selection is being updated.
+    }
     return null;
 }
 
@@ -815,6 +817,11 @@ function triggerFromSelection() {
 }
 
 function scheduleSelectionTrigger() {
+    const sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) {
+        if (selectionTimer) { clearTimeout(selectionTimer); selectionTimer = null; }
+        return;
+    }
     if (selectionTimer) clearTimeout(selectionTimer);
     selectionTimer = setTimeout(triggerFromSelection, SELECTION_DELAY_MS);
 }
