@@ -575,6 +575,10 @@ ${antStr ? `<span><b>ANTONYMS</b><br> ${antStr}</span>` : ""}
    ========================= */
 
 const HOVER_DELAY_MS = 350;
+const SELECTION_DELAY_MS = 80;
+const POPUP_LAYOUT_H = 320;
+const RE_WORD_FRAGMENT = /[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/;
+const RE_VALID_WORD = /^[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*$/;
 let hoverTimer = null;
 let lastWord = "";    // word whose box is currently shown
 let pendingWord = ""; // word that is being timed (delay not yet elapsed)
@@ -668,7 +672,7 @@ function isValidWord(w) {
   if (!w) return false;
   if (w.length < 2) return false;
   if (/\s/.test(w)) return false;
-  return /^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(w);
+  return RE_VALID_WORD.test(w);
 }
 
 function isInsideOutput(target) {
@@ -683,7 +687,7 @@ function getSelectionWord() {
     const raw = clean(sel.toString());
     if (!raw) return "";
 
-    const match = raw.match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/);
+    const match = raw.match(RE_WORD_FRAGMENT);
     return match ? match[0] : "";
 }
 
@@ -761,8 +765,8 @@ document.addEventListener("mousemove", (e) => {
             if (anchorLeft < 10) anchorLeft = 10;
 
             // If not enough space below, flip above
-            if (anchorTop + 320 > window.innerHeight) {
-                anchorTop = rect.top - 320 - 8;
+            if (anchorTop + POPUP_LAYOUT_H > window.innerHeight) {
+                anchorTop = rect.top - POPUP_LAYOUT_H - 8;
             }
             if (anchorTop < 10) anchorTop = 10;
 
@@ -800,7 +804,7 @@ function triggerFromSelection() {
         let anchorTop = rect.bottom + 8;
         if (anchorLeft + BOX_W > window.innerWidth) anchorLeft = window.innerWidth - BOX_W;
         if (anchorLeft < 10) anchorLeft = 10;
-        if (anchorTop + 320 > window.innerHeight) anchorTop = rect.top - 320 - 8;
+        if (anchorTop + POPUP_LAYOUT_H > window.innerHeight) anchorTop = rect.top - POPUP_LAYOUT_H - 8;
         if (anchorTop < 10) anchorTop = 10;
         hoverAnchor = { left: anchorLeft, top: anchorTop };
     } else {
@@ -812,7 +816,7 @@ function triggerFromSelection() {
 
 function scheduleSelectionTrigger() {
     if (selectionTimer) clearTimeout(selectionTimer);
-    selectionTimer = setTimeout(triggerFromSelection, 80);
+    selectionTimer = setTimeout(triggerFromSelection, SELECTION_DELAY_MS);
 }
 
 document.addEventListener("selectionchange", scheduleSelectionTrigger);
